@@ -181,8 +181,16 @@ document.addEventListener('keydown', function(e) {
 });
 
 async function mockPayment() {
-    alert("Payment Processed. Generating secure document...");
-    window.location.href = '/api/download/' + currentTaskId;
+    //alert("Payment Processed. Generating secure document...");
+    //window.location.href = '/api/download/' + currentTaskId;
+	// This is your live Stripe Payment Link URL
+    const stripeLink = "https://buy.stripe.com/your_actual_link_id"; 
+    
+    // Append the currentTaskId so your backend can verify it later
+    const checkoutUrl = `${stripeLink}?client_reference_id=${currentTaskId}`;
+    
+    // Redirect the user to Stripe
+    window.location.href = checkoutUrl;
 }
 
 // Updated Organic, High-Variance Flux
