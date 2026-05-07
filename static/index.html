@@ -7,17 +7,15 @@
     <link rel="icon" type="image/png" href="/assets/logo/faviLogo.png">
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    
     <link rel="stylesheet" href="/static/styles.css">
-	<!-- Google tag (gtag.js) -->
-	<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q6WC4HCZ9W"></script>
-	<script>
-	  window.dataLayer = window.dataLayer || [];
-	  function gtag(){dataLayer.push(arguments);}
-	  gtag('js', new Date());
-	
-	  gtag('config', 'G-Q6WC4HCZ9W');
-	</script>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q6WC4HCZ9W"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-Q6WC4HCZ9W');
+    </script>
 </head>
 <body oncontextmenu="return false;">
 
@@ -29,16 +27,27 @@
         <div class="logo-container">
             <img src="/assets/logo/stockBrainWhite.png" alt="StockBrain Logo" class="sb-logo">
         </div>
+
+        <div class="system-status-bar">
+            <span class="status-indicator"><span class="blink-led">●</span> SYSTEM: OPERATIONAL</span>
+            <span class="status-indicator"><span class="blink-led">●</span> GRID: 505-SFT-NET</span>
+            <span class="status-indicator"><span class="blink-led">●</span> ACTIVE AGENTS: <span id="agent-count">14</span></span>
+        </div>
         
         <div class="hero-text">
-            <h2>Your Personal AI Investment Committee</h2>
-            <p>StockBrain utilizes a multi-agent LLM framework to conduct deep fundamental, technical, and sentiment analysis. Deploy a swarm of specialized AI researchers, risk analysts, and portfolio managers to debate and synthesize actionable trading strategies in real-time.</p>
+            <h2>Deploy Your Private Hedge Fund Syndicate</h2>
+            <p>StockBrain replaces retail guesswork with a <strong>Multi-Agent Swarm</strong>. Watch in real-time as specialized AI researchers, adversarial debaters, and risk analysts stress-test the market to synthesize actionable strategies with institutional precision.</p>
         </div>
         
         <div class="search-container">
             <h3>Deploy Analytical Swarm</h3>
-            <input type="text" id="ticker" placeholder="Enter Ticker (e.g., AAPL)" onkeypress="handleEnter(event)" />
-            <button onclick="startAnalysis()">Analyze</button>
+            <div class="input-group">
+                <input type="text" id="ticker" placeholder="Enter Ticker (e.g., AAPL)" onkeypress="handleEnter(event)" />
+                <button onclick="startAnalysis()">Analyze</button>
+            </div>
+            <p class="example-link" onclick="loadExampleReport()" style="margin-top: 15px; cursor: pointer;">
+                Or view a <span style="color: var(--accent-gold); text-decoration: underline;">Sample Executive Briefing ($O)</span>
+            </p>
         </div>
         
         <div class="section-container">
@@ -48,23 +57,23 @@
             <div class="agent-grid">
                 <div class="agent-card">
                     <div class="agent-icon">📊</div>
-                    <h4>1. Analyst Team</h4>
-                    <p>Gathers live technical indicators, macroeconomic news, and social sentiment to form a foundational data baseline.</p>
+                    <h4>1. SIGINT Analyst</h4>
+                    <p>Extracts technical indicators, macro-shocks, and social sentiment directly from live market pipes.</p>
                 </div>
                 <div class="agent-card">
                     <div class="agent-icon">⚖️</div>
-                    <h4>2. Research Syndicate</h4>
-                    <p>Bullish and Bearish LLM personas actively debate the data, synthesizing a balanced perspective on market direction.</p>
+                    <h4>2. Adversarial Syndicate</h4>
+                    <p>Bull and Bear personas engage in a dialectic debate to identify flaws in the thesis before finalization.</p>
                 </div>
                 <div class="agent-card">
                     <div class="agent-icon">🎯</div>
-                    <h4>3. Execution Trader</h4>
-                    <p>Formulates a precise trading plan with entry limits, stop-loss parameters, and position sizing based on research.</p>
+                    <h4>3. Tactical Execution</h4>
+                    <p>Formulates precise logistics: entry limits, stop-loss floors, and sizing based on Kelly Criterion math.</p>
                 </div>
                 <div class="agent-card">
                     <div class="agent-icon">🛡️</div>
-                    <h4>4. Risk & Portfolio</h4>
-                    <p>Aggressive, Neutral, and Conservative analysts stress-test the trade before the Portfolio Manager gives final authorization.</p>
+                    <h4>4. Stress-Test Team</h4>
+                    <p>Aggressive and Conservative analysts attempt to break the trade plan before the Manager authorizes deployment.</p>
                 </div>
             </div>
             
@@ -130,7 +139,7 @@
 
         <div class="panel report-pane protect-text" id="report-wrapper">
             <h3 class="panel-title">Supporting Agent Documentation</h3>
-            <div id="report-content" class="markdown-body">
+            <div id="report-content" class="markdown-body blurred-content">
                 <div class="waiting-text">Awaiting data compilation from the analytical swarm...</div>
             </div>
         </div>

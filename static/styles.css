@@ -1,4 +1,6 @@
-/* Base Themes (Dark Mode Default) */
+/* ============================================================
+   I. BASE THEMES & VARIABLES
+   ============================================================ */
 :root {
     --bg-main: #0A1128; 
     --bg-panel: #112240; 
@@ -13,32 +15,32 @@
     --border-radius: 6px;
     --shadow: 0 10px 30px -15px rgba(0,0,0,0.5);
     
-    /* Gradients */
     --grad-pm-card: linear-gradient(135deg, #1e3a8a 0%, #0A1128 100%);
     --grad-arch-card: linear-gradient(135deg, #112240 0%, #0A1128 100%);
     --download-bg: rgba(10, 17, 40, 0.95);
 }
 
-/* Light Mode Overrides */
 body.light-mode {
     --bg-main: #F8FAFC; 
     --bg-panel: #FFFFFF; 
     --bg-card: #F1F5F9;
     --text-main: #1E293B; 
-    --text-muted: #64748B;
+    --text-muted: #475569; 
     --text-heading: #0F172A;
-    --border-color: #E2E8F0;
-    --accent-gold: #D97706; /* Slightly darker gold for light mode text readability */
+    --border-color: #CBD5E1;
+    --accent-gold: #B45309; 
     --accent-green: #059669;
     --accent-blue: #0284C7;
     --shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
 
     --grad-pm-card: linear-gradient(135deg, #FFFFFF 0%, #F1F5F9 100%);
-    --grad-arch-card: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
+    --grad-arch-card: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
     --download-bg: rgba(255, 255, 255, 0.95);
 }
 
-/* Global Styles */
+/* ============================================================
+   II. GLOBAL & LAYOUT STYLES
+   ============================================================ */
 body { 
     font-family: system-ui, -apple-system, sans-serif; 
     background: var(--bg-main); color: var(--text-main); 
@@ -47,28 +49,130 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 
+/* FLUID IMAGE SCALING: Added to ensure screenshots and logos never overflow */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+
+/* Update this specific section in your styles.css */
+
+/* ============================================================
+   IX. LOGO SCALING (LANDING vs. DASHBOARD)
+   ============================================================ */
+
+/* Primary Landing Page Logo */
+.logo-container img {
+    height: 100px; /* Reduced from original size for boardroom feel */
+    width: auto;
+    object-fit: contain;
+    margin-bottom: 10px;
+    filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.2));
+}
+
+/* Dashboard & Report Header Logo - This fixes the "huge" issue */
+.dashboard-header .sb-logo {
+    height: 45px; /* Compact size for live analysis view */
+    width: auto;
+    object-fit: contain;
+    margin: 0;
+    padding: 5px 0;
+    filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.1));
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .logo-container img {
+        height: 80px;
+    }
+    .dashboard-header .sb-logo {
+        height: 35px;
+    }
+}
+.logo-container img {
+    /* Reduced height for a more professional, "Header" feel */
+    height: 100px; 
+    width: auto;
+    object-fit: contain;
+    margin-bottom: 10px;
+    /* Added a subtle drop shadow to make the logo pop against the background */
+    filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.2));
+}
+
+/* Ensure the logo remains small on mobile devices */
+@media (max-width: 768px) {
+    .logo-container img {
+        height: 80px;
+    }
+}
+
+
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-main); }
 ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
 
-/* Theme Toggle Button */
 #theme-toggle {
     position: absolute; top: 20px; right: 20px;
     padding: 10px 15px; border-radius: 20px; border: 1px solid var(--border-color);
     background: var(--bg-panel); color: var(--text-main);
     cursor: pointer; font-weight: 500; font-size: 0.9rem;
-    box-shadow: var(--shadow); transition: 0.3s;
-    z-index: 100;
+    box-shadow: var(--shadow); z-index: 100; transition: 0.3s;
 }
 #theme-toggle:hover { filter: brightness(1.1); }
 
-/* Landing Page */
-#landing-page {
-    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-    width: 100%; padding: 60px 20px; box-sizing: border-box;
+/* ============================================================
+   III. SYSTEM STATUS BAR (TACTICAL OVERLAY)
+   ============================================================ */
+.system-status-bar {
+    display: flex; gap: 25px;
+    font-family: 'Consolas', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    padding: 10px 25px;
+    border-radius: 20px;
+    margin-bottom: 30px;
+    backdrop-filter: blur(4px);
+    overflow: visible;
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    background: rgba(10, 17, 40, 0.9);
+    color: var(--accent-blue);
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.1);
+    flex-wrap: wrap; /* Added for mobile wrapping */
+    justify-content: center;
 }
 
-.logo-container img { height: 160px; width: auto; object-fit: contain; margin-bottom: 20px;}
+body.light-mode .system-status-bar {
+    background: #FFFFFF;
+    border: 1px solid var(--accent-blue);
+    color: var(--text-main);
+    box-shadow: 0 2px 15px rgba(2, 132, 199, 0.1);
+}
+
+.blink-led {
+    margin-right: 8px;
+    color: var(--accent-green);
+    text-shadow: 0 0 10px var(--accent-green), 0 0 20px rgba(16, 185, 129, 0.5);
+    display: inline-block;
+    animation: hardware-pulse 1.2s infinite;
+}
+
+#agent-count { color: var(--accent-blue); font-weight: bold; }
+
+@keyframes hardware-pulse {
+    0%, 45% { opacity: 1; filter: brightness(1.2); }
+    50%, 95% { opacity: 0.15; filter: brightness(0.6); }
+    100% { opacity: 1; }
+}
+
+/* ============================================================
+   IV. LANDING PAGE & SEARCH
+   ============================================================ */
+#landing-page {
+    display: flex; flex-direction: column; align-items: center;
+    width: 100%; padding: 60px 20px; box-sizing: border-box;
+}
 
 .hero-text { text-align: center; max-width: 800px; margin-bottom: 40px; }
 .hero-text h2 { color: var(--text-heading); font-size: 2.5rem; margin-bottom: 15px; font-weight: 700; letter-spacing: -0.5px;}
@@ -77,130 +181,106 @@ body {
 .search-container { 
     text-align: center; background: var(--bg-panel); padding: 40px;
     border-radius: var(--border-radius); border: 1px solid var(--border-color);
-    box-shadow: var(--shadow); width: 100%; max-width: 700px;
-    margin-bottom: 60px;
+    box-shadow: var(--shadow); width: 100%; max-width: 700px; margin-bottom: 60px;
 }
-.search-container h3 { color: var(--accent-gold); margin-top: 0; margin-bottom: 20px; font-size: 1.4rem;}
+
+.example-link { margin-top: 15px; font-size: 0.9rem; color: var(--text-muted); cursor: pointer; }
+.highlight { color: var(--accent-gold); text-decoration: underline; }
 
 input { 
     padding: 16px 20px; font-size: 1.2rem; width: 60%; max-width: 350px;
     background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius);
-    color: var(--text-main); outline: none; text-transform: uppercase; font-weight: 500;
+    color: var(--text-main); outline: none; text-transform: uppercase;
 }
-input:focus { border-color: var(--accent-gold); }
 
 .search-container button { 
     padding: 17px 35px; font-size: 1.1rem; background: var(--accent-gold); 
     color: #FFFFFF; border: none; border-radius: var(--border-radius); font-weight: bold;
     cursor: pointer; margin-left: 10px; transition: 0.2s; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
 }
-.search-container button:hover { transform: translateY(-2px); filter: brightness(1.1); }
 
-/* Expanded Info Sections */
+/* ============================================================
+   V. AGENT GRID & ARCHITECTURE
+   ============================================================ */
 .section-container { width: 100%; max-width: 1200px; margin-bottom: 60px; text-align: center; }
-.section-title { color: var(--text-heading); font-size: 2rem; margin-bottom: 15px; font-weight: 600; }
-.section-subtitle { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 40px; max-width: 800px; margin-left: auto; margin-right: auto; }
-
 .agent-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 .agent-card {
     background: var(--bg-panel); border: 1px solid var(--border-color); padding: 25px 20px; 
     border-radius: var(--border-radius); text-align: left; transition: transform 0.3s ease; box-shadow: var(--shadow);
 }
 .agent-card:hover { transform: translateY(-5px); border-color: var(--accent-blue); }
-.agent-icon { font-size: 2.5rem; margin-bottom: 15px; }
-.agent-card h4 { color: var(--accent-gold); margin: 0 0 10px 0; font-size: 1.2rem;}
-.agent-card p { color: var(--text-main); font-size: 0.95rem; line-height: 1.5; margin: 0;}
 
-.architecture-card {
-    background: var(--grad-arch-card); border: 1px solid var(--border-color); border-left: 4px solid var(--accent-blue);
-    padding: 30px; border-radius: var(--border-radius); text-align: left; margin-top: 20px; box-shadow: var(--shadow);
-}
-.architecture-card h4 { color: var(--text-heading); font-size: 1.3rem; margin: 0 0 15px 0;}
-.architecture-card p { color: var(--text-muted); font-size: 1.05rem; line-height: 1.6;}
-
-.screenshots-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; }
-.screenshot-card {
-    background: var(--bg-panel); padding: 15px; border-radius: var(--border-radius);
-    border: 1px solid var(--border-color); box-shadow: var(--shadow);
-}
-.screenshot-card img { width: 100%; height: auto; border-radius: 4px; border: 1px solid var(--border-color); }
-.screenshot-card p { color: var(--accent-blue); margin: 15px 0 5px 0; font-weight: 500; font-size: 1.1rem; }
-
-/* Dashboard Styles */
+/* ============================================================
+   VI. DASHBOARD & CONSOLE (MISSION-CRITICAL)
+   ============================================================ */
 #dashboard {
     display: none; flex-direction: column; gap: 20px;
-    width: 100%; max-width: 1400px; padding: 20px; padding-bottom: 100px; box-sizing: border-box;
+    width: 100%; max-width: 1400px; padding: 20px 20px 100px; box-sizing: border-box;
 }
 
-.dashboard-header {
-    display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 10px;
+/* RESPONSIVE PANEL GRID: Added minmax logic to prevent layout breakage */
+.top-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 20px; width: 100%;
 }
-.dashboard-header img { height: 40px; }
-.dashboard-header h2 { color: var(--text-heading); margin: 0; font-size: 1.4rem; font-weight: 600;}
 
-.top-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; }
 .panel { 
-    background: var(--bg-panel); border-radius: var(--border-radius); border: 1px solid var(--border-color); 
-    padding: 20px; display: flex; flex-direction: column; box-shadow: var(--shadow);
+    background: #0D162D; border-radius: var(--border-radius); border: 1px solid var(--border-color); 
+    padding: 20px; display: flex; flex-direction: column; min-height: 350px;
+    box-shadow: inset 0 0 15px rgba(56, 189, 248, 0.05), var(--shadow);
 }
-.panel-title { color: var(--text-heading); font-size: 1.1rem; font-weight: 600; margin: 0 0 15px 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;}
 
-.progress-pane { height: 350px; overflow-y: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
-th { color: var(--text-muted); font-weight: 500; text-align: left; padding-bottom: 10px; }
-td { padding: 8px 0; border-bottom: 1px solid var(--border-color); }
-.col-team { color: var(--text-main); font-weight: 500; }
-.col-agent { color: var(--text-muted); }
+body.light-mode .panel { background: var(--bg-panel); }
 
-.status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;}
-.status-Pending { background: var(--bg-card); color: var(--text-muted); border: 1px solid var(--border-color);}
-.status-In { background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); } 
-.status-Completed { background: rgba(16, 185, 129, 0.1); color: var(--accent-green); }
+/* ============================================================
+   VII. REPORTS & CONVERSION
+   ============================================================ */
+#report-wrapper { position: relative; overflow: hidden; }
 
-.msg-pane { height: 350px; display: flex; flex-direction: column; }
-.log-row td { padding: 6px; font-family: 'Consolas', monospace; font-size: 0.85rem; border-bottom: none;}
-.log-time { color: var(--text-muted); width: 80px; }
-.log-type { color: var(--accent-gold); width: 80px; font-weight: bold;}
-.log-content { color: var(--text-main); }
+/* BLURRED PREVIEW: Integrated for conversion reports */
+.blurred-content {
+    filter: blur(8px);
+    pointer-events: none;
+    user-select: none;
+    opacity: 0.6;
+    mask-image: linear-gradient(to bottom, black 0%, transparent 90%);
+}
 
-/* Reports */
-#pm-decision-wrapper { display: none; margin-top: 10px; }
 .pm-card {
-    background: var(--grad-pm-card);
-    border: 1px solid var(--border-color); border-left: 6px solid var(--accent-gold);
-    border-radius: var(--border-radius); padding: 30px; box-shadow: var(--shadow);
+    background: var(--grad-pm-card); border: 1px solid var(--border-color); 
+    border-left: 6px solid var(--accent-gold); border-radius: var(--border-radius); padding: 30px;
 }
-.pm-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(245, 158, 11, 0.2); padding-bottom: 15px; margin-bottom: 20px;}
-.pm-title { color: var(--accent-gold); font-size: 1.5rem; margin: 0; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;}
-.report-date-text { color: var(--text-muted); font-weight: 500; }
 
-.report-pane { display: none; background: var(--bg-panel); border-radius: var(--border-radius); padding: 30px; border: 1px solid var(--border-color);}
-.protect-text { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
-
-.markdown-body { color: var(--text-main); line-height: 1.7; font-size: 1.05rem;}
-.markdown-body h2 { color: var(--text-heading); border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-top: 30px; font-weight: 600;}
-.markdown-body h3 { color: var(--accent-blue); margin-top: 20px; font-weight: 500;}
-.markdown-body strong { color: var(--text-heading); font-weight: 700; }
-
-/* Download Footer */
 .download-bar {
-    position: fixed; bottom: 0; left: 0; width: 100%; background: var(--download-bg); backdrop-filter: blur(5px);
-    border-top: 2px solid var(--accent-gold); padding: 15px 0; display: flex; justify-content: center; align-items: center; gap: 20px;
-    z-index: 1000; box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
+    position: fixed; bottom: 0; left: 0; width: 100%; background: var(--download-bg); 
+    backdrop-filter: blur(10px); border-top: 2px solid var(--accent-gold);
+    padding: 15px 0; display: flex; justify-content: center; align-items: center; gap: 20px;
+    z-index: 1000; box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
 }
-.download-text { color: var(--text-heading); font-size: 1.1rem; font-weight: 500;}
-.pay-btn {
-    padding: 10px 20px; font-size: 1rem; background: var(--accent-gold); 
-    color: #FFFFFF; border: none; border-radius: var(--border-radius); font-weight: bold; cursor: pointer;
-}
-.waiting-text { color: var(--text-muted); font-style: italic; text-align: center; padding: 40px; }
 
+.pay-btn {
+    padding: 12px 24px; font-size: 1rem; background: var(--accent-gold); 
+    color: #FFFFFF; border: none; border-radius: var(--border-radius); font-weight: bold;
+    cursor: pointer; box-shadow: 0 0 20px rgba(245, 158, 11, 0.4); transition: all 0.3s ease;
+}
+
+/* ============================================================
+   VIII. RESPONSIVE UTILITIES
+   ============================================================ */
 @media (max-width: 1000px) {
     .agent-grid { grid-template-columns: 1fr 1fr; }
-    .screenshots-grid { grid-template-columns: 1fr; }
     .top-grid { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 768px) {
+    .hero-text h2 { font-size: 1.8rem; }
+    .search-container input { width: 100%; margin-bottom: 10px; }
+    .search-container button { width: 100%; margin-left: 0; }
+    .agent-grid { grid-template-columns: 1fr; }
+    .system-status-bar { gap: 10px; }
+}
+
 @media (max-width: 600px) {
     .agent-grid { grid-template-columns: 1fr; }
 }
