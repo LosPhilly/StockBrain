@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockBrain AI - Institutional Intelligence</title>
+    <link rel="icon" type="image/png" href="/assets/logo/faviLogo.png">
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body oncontextmenu="return false;">
+
+    <button id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle Dark/Light Mode">
+        ☀️ Light Mode
+    </button>
+
+    <div id="landing-page">
+        <div class="logo-container">
+            <img src="/assets/logo/stockBrainWhite.png" alt="StockBrain Logo" class="sb-logo">
+        </div>
+        
+        <div class="hero-text">
+            <h2>Your Personal AI Investment Committee</h2>
+            <p>StockBrain utilizes a multi-agent LLM framework to conduct deep fundamental, technical, and sentiment analysis. Deploy a swarm of specialized AI researchers, risk analysts, and portfolio managers to debate and synthesize actionable trading strategies in real-time.</p>
+        </div>
+        
+        <div class="search-container">
+            <h3>Deploy Analytical Swarm</h3>
+            <input type="text" id="ticker" placeholder="Enter Ticker (e.g., AAPL)" onkeypress="handleEnter(event)" />
+            <button onclick="startAnalysis()">Analyze</button>
+        </div>
+        
+        <div class="section-container">
+            <h2 class="section-title">Meet Your Personal Hedge Fund</h2>
+            <p class="section-subtitle">A dedicated swarm of AI agents working in absolute synergy. No emotion, no bias, just strict engineering standards and data-backed execution.</p>
+            
+            <div class="agent-grid">
+                <div class="agent-card">
+                    <div class="agent-icon">📊</div>
+                    <h4>1. Analyst Team</h4>
+                    <p>Gathers live technical indicators, macroeconomic news, and social sentiment to form a foundational data baseline.</p>
+                </div>
+                <div class="agent-card">
+                    <div class="agent-icon">⚖️</div>
+                    <h4>2. Research Syndicate</h4>
+                    <p>Bullish and Bearish LLM personas actively debate the data, synthesizing a balanced perspective on market direction.</p>
+                </div>
+                <div class="agent-card">
+                    <div class="agent-icon">🎯</div>
+                    <h4>3. Execution Trader</h4>
+                    <p>Formulates a precise trading plan with entry limits, stop-loss parameters, and position sizing based on research.</p>
+                </div>
+                <div class="agent-card">
+                    <div class="agent-icon">🛡️</div>
+                    <h4>4. Risk & Portfolio</h4>
+                    <p>Aggressive, Neutral, and Conservative analysts stress-test the trade before the Portfolio Manager gives final authorization.</p>
+                </div>
+            </div>
+            
+            <div class="architecture-card">
+                <h4>High-Integrity Architecture</h4>
+                <p>StockBrain is built on a mission-critical architecture prioritizing forensic-grade reliability. By enforcing strict layer isolation between data gathering, debate logic, and final execution, the system prevents hallucinations and ensures every trade recommendation is grounded in mathematically verifiable market realities.</p>
+            </div>
+        </div>
+
+        <div class="section-container">
+            <h2 class="section-title">See StockBrain In Action</h2>
+            <p class="section-subtitle">Experience total transparency. Watch the agents stream their internal logic live before the final executive briefing is rendered.</p>
+            <div class="screenshots-grid">
+                <div class="screenshot-card">
+                    <p>Live Agent Streaming & Audit Trail</p>
+                    <img src="/assets/images/web/searchingPage.png" alt="Live Audit Trail Dashboard">
+                </div>
+                <div class="screenshot-card">
+                    <p>Executive Portfolio Manager Decision</p>
+                    <img src="/assets/images/web/searchingPageFinish.png" alt="Completed Analysis Report">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="dashboard">
+        <div class="dashboard-header">
+            <img src="/assets/logo/stockBrainWhite.png" alt="StockBrain Logo" class="sb-logo">
+            <h2 id="dash-ticker-title">Live Analysis</h2>
+        </div>
+    
+        <div class="top-grid">
+            <div class="panel progress-pane">
+                <h3 class="panel-title">Swarm Deployment Status</h3>
+                <table>
+                    <tr><th>Department</th><th>Active Agent</th><th>Status</th></tr>
+                    <tr><td class="col-team">I. Analytics</td><td class="col-agent">Market & Fundamentals</td><td><span class="status-badge status-Pending" id="st-market">Pending</span></td></tr>
+                    <tr><td class="col-team">II. Research</td><td class="col-agent">Bull/Bear Syndicate</td><td><span class="status-badge status-Pending" id="st-bull">Pending</span></td></tr>
+                    <tr><td class="col-team"></td><td class="col-agent">Research Manager</td><td><span class="status-badge status-Pending" id="st-rmanager">Pending</span></td></tr>
+                    <tr><td class="col-team">III. Trading</td><td class="col-agent">Execution Trader</td><td><span class="status-badge status-Pending" id="st-trader">Pending</span></td></tr>
+                    <tr><td class="col-team">IV. Risk Mgmt</td><td class="col-agent">Risk Assessment Team</td><td><span class="status-badge status-Pending" id="st-risk1">Pending</span></td></tr>
+                    <tr><td class="col-team">V. Portfolio Mgmt</td><td class="col-agent">Portfolio Manager</td><td><span class="status-badge status-Pending" id="st-pmanager">Pending</span></td></tr>
+                </table>
+            </div>
+            
+            <div class="panel msg-pane">
+                <h3 class="panel-title">Live Audit Trail</h3>
+                <div id="log-scroll-container" style="flex: 1; overflow-y:auto; padding-right: 5px;">
+                    <table style="width:100%; border-collapse:collapse;"><tbody id="log-table-body"></tbody></table>
+                </div>
+            </div>
+        </div>
+        
+        <div id="pm-decision-wrapper" class="protect-text">
+            <div class="pm-card">
+                <div class="pm-header">
+                    <h2 class="pm-title">Portfolio Manager Decision</h2>
+                    <span class="report-date-text" id="report-date"></span>
+                </div>
+                <div class="markdown-body pm-content" id="pm-content"></div>
+            </div>
+        </div>
+
+        <div class="panel report-pane protect-text" id="report-wrapper">
+            <h3 class="panel-title">Supporting Agent Documentation</h3>
+            <div id="report-content" class="markdown-body">
+                <div class="waiting-text">Awaiting data compilation from the analytical swarm...</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="download-bar" id="dl-bar" style="display:none;">
+        <span class="download-text">Executive Briefing Finalized. Export structured intelligence report (PDF/Markdown).</span>
+        <button class="pay-btn" onclick="mockPayment()">Pay $4.99 to Export</button>
+    </div>
+
+    <script src="/static/scripts.js"></script>
+</body>
+</html>
