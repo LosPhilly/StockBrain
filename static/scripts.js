@@ -24,15 +24,12 @@ function toggleTheme() {
 function updateLogos(isLight) {
     const logos = document.querySelectorAll('.sb-logo');
     logos.forEach(img => {
-        // Swap to the black logo in light mode, white logo in dark mode
         img.src = isLight ? '/assets/logo/stockBrainBlack.png' : '/assets/logo/stockBrainWhite.png';
     });
 }
 
-// Ensure theme is set immediately on load
 initTheme();
 
-// Handle pressing "Enter" in the search box
 function handleEnter(event) {
     if (event.key === "Enter") {
         startAnalysis();
@@ -53,7 +50,6 @@ async function startAnalysis() {
     const ticker = document.getElementById('ticker').value.toUpperCase();
     if(!ticker) return;
 
-    // Transition UI to dashboard
     document.getElementById('landing-page').style.display = 'none';
     document.getElementById('dashboard').style.display = 'flex';
     document.getElementById('dash-ticker-title').innerText = `Live Analysis: ${ticker}`;
@@ -95,34 +91,32 @@ async function startAnalysis() {
         if (statusData.status === 'completed' || statusData.status === 'failed') {
             clearInterval(pollInterval);
             
-            // Locate the completion block inside pollInterval
-			if (statusData.status === 'completed') {
-			    document.getElementById('report-date').innerText = new Date().toLocaleDateString();
-			    
-			    // Parse the decision
-			    const pmDecision = statusData.pm_decision;
-			    document.getElementById('pm-content').innerHTML = marked.parse(pmDecision);
-			    document.getElementById('pm-decision-wrapper').style.display = 'block';
-			    
-			    document.getElementById('report-content').innerHTML = marked.parse(statusData.supporting_report);
-			    
-			    // UPDATE: Strategic Conversion Logic
-			    const dlBar = document.getElementById('dl-bar');
-			    const signalType = pmDecision.includes("BUY") || pmDecision.includes("Overweight") ? "BULLISH" : "CAUTION";
-			    
-			    dlBar.innerHTML = `
-			        <span class="download-text">⚠️ <strong>${signalType} SIGNAL DETECTED:</strong> Unlock full adversarial debate and exit strategy briefing.</span>
-			        <button class="pay-btn" onclick="mockPayment()">Get Executive Intelligence — $4.99</button>
-			    `;
-			    dlBar.style.display = 'flex';
-			} else {
-			                document.getElementById('report-content').innerHTML = `<h3 style="color:red">ERROR: ${statusData.error}</h3>`;
-			            }
-			        }
-			    }, 2000);
-			}
+            if (statusData.status === 'completed') {
+                document.getElementById('report-date').innerText = new Date().toLocaleDateString();
+                const pmDecision = statusData.pm_decision;
+                document.getElementById('pm-content').innerHTML = marked.parse(pmDecision);
+                document.getElementById('pm-decision-wrapper').style.display = 'block';
+                
+                // Apply blurred preview for conversion
+                const reportContent = document.getElementById('report-content');
+                reportContent.innerHTML = marked.parse(statusData.supporting_report);
+                reportContent.classList.add('blurred-content');
+                
+                const dlBar = document.getElementById('dl-bar');
+                const signalType = pmDecision.includes("BUY") || pmDecision.includes("Overweight") ? "BULLISH" : "CAUTION";
+                
+                dlBar.innerHTML = `
+                    <span class="download-text">⚠️ <strong>${signalType} SIGNAL DETECTED:</strong> Unlock full adversarial debate and exit strategy briefing.</span>
+                    <button class="pay-btn" onclick="mockPayment()">Get Executive Intelligence — $4.99</button>
+                `;
+                dlBar.style.display = 'flex';
+            } else {
+                document.getElementById('report-content').innerHTML = `<h3 style="color:red">ERROR: ${statusData.error}</h3>`;
+            }
+        }
+    }, 2000);
+}
 
-// Anti-Copy Mechanics
 document.addEventListener('keydown', function(e) {
     if (e.ctrlKey && (e.key === 'c' || e.key === 'a' || e.key === 'x')) { e.preventDefault(); }
 });
@@ -132,6 +126,7 @@ async function mockPayment() {
     window.location.href = '/api/download/' + currentTaskId;
 }
 
+// Updated Organic, High-Variance Flux
 function simulateNetworkFlux() {
     const agentDisplay = document.getElementById('agent-count');
     if (!agentDisplay) return;
@@ -139,24 +134,23 @@ function simulateNetworkFlux() {
     let count = 14;
 
     setInterval(() => {
-        const flux = Math.floor(Math.random() * 3) - 1; 
+        // High-variance: Shift by -3 to +3 for organic movement
+        const flux = Math.floor(Math.random() * 7) - 3; 
         count += flux;
 
-        if (count < 12) count = 13;
-        if (count > 19) count = 18;
+        // Realistic range: 4 (quiet) to 28 (surge)
+        if (count < 4) count = 6;
+        if (count > 28) count = 22;
 
         agentDisplay.innerText = count;
-    }, 3000); 
+    }, 2500); 
 }
 
-// Function to load the example Realty Income (O) data
 function loadExampleReport() {
-    // 1. Clear UI and show dashboard
     document.getElementById('landing-page').style.display = 'none';
     document.getElementById('dashboard').style.display = 'flex';
     document.getElementById('dash-ticker-title').innerText = "Live Analysis: O (Example)";
     
-    // 2. Simulate "Fast" Swarm completion
     const statuses = ['st-market', 'st-bull', 'st-rmanager', 'st-trader', 'st-risk1', 'st-pmanager'];
     statuses.forEach(id => {
         const el = document.getElementById(id);
@@ -164,7 +158,6 @@ function loadExampleReport() {
         el.innerText = 'COMPLETED';
     });
 
-    // 3. Populate with the provided Markdown data
     const examplePM = `
 # Portfolio Manager Decision: O
 **Rating**: Overweight
@@ -175,25 +168,25 @@ function loadExampleReport() {
     document.getElementById('pm-content').innerHTML = marked.parse(examplePM);
     document.getElementById('pm-decision-wrapper').style.display = 'block';
     
-    // Since this is a sample, show the download bar immediately
-    document.getElementById('dl-bar').style.display = 'flex';
-    document.getElementById('dl-bar').innerHTML = `
+    const reportContent = document.getElementById('report-content');
+    reportContent.innerHTML = "### [DATA BLOCKED]\nDetailed agent research and adversarial debates are only available in the Executive Briefing.";
+    reportContent.classList.add('blurred-content');
+
+    const dlBar = document.getElementById('dl-bar');
+    dlBar.style.display = 'flex';
+    dlBar.innerHTML = `
         <span class="download-text">⚠️ <strong>EXAMPLE REPORT:</strong> This is how the finalized $4.99 intelligence briefing appears.</span>
-        <button class="pay-btn" onclick="alert('In a real scenario, this would trigger Stripe/PayPal payment.')">Test Pay $4.99</button>
+        <button class="pay-btn" onclick="alert('In a real scenario, this would trigger payment.')">Test Pay $4.99</button>
     `;
 }
 
-
-
 window.addEventListener('DOMContentLoaded', () => {
-    // Force a reflow to ensure animations trigger on all browsers
     const leds = document.querySelectorAll('.blink-led');
     leds.forEach(led => {
         led.style.animation = 'none';
-        led.offsetHeight; /* trigger reflow */
+        led.offsetHeight; 
         led.style.animation = null; 
     });
     
-    // Start your existing agent flux logic
     simulateNetworkFlux(); 
 });

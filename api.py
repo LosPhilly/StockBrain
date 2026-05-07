@@ -1,17 +1,38 @@
 from fastapi import FastAPI, BackgroundTasks, HTTPException
 from fastapi.responses import FileResponse, PlainTextResponse # Removed HTMLResponse, added FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from fastapi.staticfiles import StaticFiles
 import uuid
 import datetime
 from dotenv import load_dotenv
-
+import os
 load_dotenv() 
 
 from tradingagents.graph.trading_graph import TradingAgentsGraph
 from tradingagents.default_config import DEFAULT_CONFIG
 
-app = FastAPI(title="StockBrain Engine")
+# Set this to "PROD" in your environment variables when deploying
+ENV = os.getenv("ENV", "DEV")
+
+if ENV == "PROD":
+    # Disable Swagger (/docs) and ReDoc (/redoc) entirely
+    app = FastAPI(
+        title="StockBrain Engine",
+        docs_url=None, 
+        redoc_url=None,
+        openapi_url=None # This hides the raw JSON schema too
+    )
+else:
+    app = FastAPI(title="StockBrain Engine")
+	
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8000", "stockbrain.io"], 
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Mount static files (HTML, CSS, JS) and assets (Images, Logos)
 app.mount("/static", StaticFiles(directory="static"), name="static")

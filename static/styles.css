@@ -49,65 +49,30 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 
-/* FLUID IMAGE SCALING: Added to ensure screenshots and logos never overflow */
+/* Fluid Asset Scaling */
 img {
     max-width: 100%;
     height: auto;
     display: block;
 }
 
-
-/* Update this specific section in your styles.css */
-
-/* ============================================================
-   IX. LOGO SCALING (LANDING vs. DASHBOARD)
-   ============================================================ */
-
-/* Primary Landing Page Logo */
+/* LOGO SCALING: Fixes the 'huge' issue in reports and landing */
 .logo-container img {
-    height: 100px; /* Reduced from original size for boardroom feel */
+    height: 100px; 
     width: auto;
     object-fit: contain;
     margin-bottom: 10px;
     filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.2));
 }
 
-/* Dashboard & Report Header Logo - This fixes the "huge" issue */
 .dashboard-header .sb-logo {
-    height: 45px; /* Compact size for live analysis view */
+    height: 45px; 
     width: auto;
     object-fit: contain;
     margin: 0;
     padding: 5px 0;
     filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.1));
 }
-
-/* Mobile Adjustments */
-@media (max-width: 768px) {
-    .logo-container img {
-        height: 80px;
-    }
-    .dashboard-header .sb-logo {
-        height: 35px;
-    }
-}
-.logo-container img {
-    /* Reduced height for a more professional, "Header" feel */
-    height: 100px; 
-    width: auto;
-    object-fit: contain;
-    margin-bottom: 10px;
-    /* Added a subtle drop shadow to make the logo pop against the background */
-    filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.2));
-}
-
-/* Ensure the logo remains small on mobile devices */
-@media (max-width: 768px) {
-    .logo-container img {
-        height: 80px;
-    }
-}
-
 
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-main); }
@@ -139,7 +104,7 @@ img {
     background: rgba(10, 17, 40, 0.9);
     color: var(--accent-blue);
     box-shadow: 0 0 15px rgba(56, 189, 248, 0.1);
-    flex-wrap: wrap; /* Added for mobile wrapping */
+    flex-wrap: wrap; 
     justify-content: center;
 }
 
@@ -218,7 +183,6 @@ input {
     width: 100%; max-width: 1400px; padding: 20px 20px 100px; box-sizing: border-box;
 }
 
-/* RESPONSIVE PANEL GRID: Added minmax logic to prevent layout breakage */
 .top-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
@@ -232,6 +196,18 @@ input {
 }
 
 body.light-mode .panel { background: var(--bg-panel); }
+
+.panel-title {
+    font-family: 'Consolas', monospace; text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--accent-blue); font-size: 0.85rem; border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px; margin-bottom: 15px;
+}
+
+.log-content {
+    color: #A5F3FC; text-shadow: 0 0 5px rgba(165, 243, 252, 0.2);
+}
+
+body.light-mode .log-content { color: var(--text-main); text-shadow: none; }
 
 /* ============================================================
    VII. REPORTS & CONVERSION
@@ -279,6 +255,8 @@ body.light-mode .panel { background: var(--bg-panel); }
     .search-container button { width: 100%; margin-left: 0; }
     .agent-grid { grid-template-columns: 1fr; }
     .system-status-bar { gap: 10px; }
+    .logo-container img { height: 80px; }
+    .dashboard-header .sb-logo { height: 35px; }
 }
 
 @media (max-width: 600px) {
