@@ -56,8 +56,31 @@
             <h2>Deploy Your Private Hedge Fund Syndicate</h2>
             <p>StockBrain replaces retail guesswork with a <strong>Multi-Agent Swarm</strong>. Watch in real-time as specialized AI researchers, adversarial debaters, and risk analysts stress-test the market to synthesize actionable strategies with institutional precision.</p>
         </div>
+
+        
         
         <div class="search-container">
+            <div class="trending-container">
+    <span class="trending-label"><span class="blink-led" style="color: var(--accent-gold);">●</span> TRENDING NOW:</span>
+    </br >
+    </br >
+    <div class="trending-wrapper">
+        <div class="trending-chips">
+            <button class="chip" onclick="setTicker('O')">$O</button>
+            <button class="chip" onclick="setTicker('NVDA')">$NVDA</button>
+            <button class="chip" onclick="setTicker('TSLA')">$TSLA</button>
+            <button class="chip" onclick="setTicker('BTC')">$BTC</button>
+        </div>
+    </div>
+</div>
+
+<div id="trends-container" class="panel" style="min-height: 450px; margin-top: 20px; display:none;">
+    <h3 class="panel-title">Institutional Search Interest (Google Trends)</h3>
+    <div id="trends-widget-mount">
+        <div class="waiting-text">Awaiting Ticker Selection...</div>
+    </div>
+</div>
+</br >
             <h3>Deploy Analytical Swarm</h3>
             <div class="input-group">
                 <input type="text" id="ticker" placeholder="Enter Ticker (e.g., AAPL)" onkeypress="handleEnter(event)" />
@@ -65,6 +88,7 @@
             </div>
             <p class="example-link" onclick="loadExampleReport()" style="margin-top: 15px; cursor: pointer;">
                 Or view a <span style="color: var(--accent-gold); text-decoration: underline;">Sample Executive Briefing ($O)</span>
+                or the <a href="/assets/ARCexample_Stock_Report_VYMI.pdf" target="_blank" style="color: var(--accent-blue); text-decoration: underline;">30-Page Institutional Dossier ($VYMI)</a>
             </p>
         </div>
         
@@ -204,7 +228,7 @@
     
     <div class="download-bar" id="dl-bar" style="display:none;">
         <span class="download-text">Executive Briefing Finalized. Export structured intelligence report (PDF).</span>
-        <button class="pay-btn" onclick="processInstitutionalExport()">Pay $4.99 to Export PDF</button>
+        <button class="pay-btn" onclick="mockPayment()">Pay $4.99 to Export PDF</button>
     </div>
 
     <footer class="system-footer">

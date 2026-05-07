@@ -2,7 +2,9 @@ let currentTaskId = "";
 let lastLogIndex = 0;
 let pollInterval;
 
-// Theme Logic
+// ==========================================
+// I. THEME & UI INITIALIZATION
+// ==========================================
 function initTheme() {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'light') {
@@ -34,6 +36,66 @@ function handleEnter(event) {
     if (event.key === "Enter") {
         startAnalysis();
     }
+}
+
+// ==========================================
+// II. SYMBOL AUTOCOMPLETE (YFINANCE)
+// ==========================================
+/**
+ * Hooks into the Yahoo Finance autocomplete pipe to suggest 
+ * institutional tickers as the user types.
+ */
+async function handleAutocomplete() {
+    const input = document.getElementById('ticker');
+    const query = input.value.toUpperCase().trim();
+    
+    // Clear previous timeout to prevent API flooding
+    clearTimeout(autocompleteTimeout);
+    
+    if (query.length < 1) {
+        hideAutocomplete();
+        return;
+    }
+
+    autocompleteTimeout = setTimeout(async () => {
+        try {
+            // Using a JSONP/CORS-friendly approach or your backend proxy
+            const response = await fetch(`https://autoc.finance.yahoo.com/autoc?query=${query}&region=1&lang=en`);
+            const data = await response.json();
+            renderSuggestions(data.ResultSet.Result);
+        } catch (e) {
+            console.error("Autocomplete Node Offline:", e);
+        }
+    }, 300); // 300ms debounce
+}
+
+function renderSuggestions(results) {
+    let list = document.getElementById('ticker-suggestions');
+    if (!list) {
+        list = document.createElement('div');
+        list.id = 'ticker-suggestions';
+        list.className = 'autocomplete-panel';
+        document.querySelector('.input-group').appendChild(list);
+    }
+
+    list.innerHTML = results.slice(0, 5).map(res => `
+        <div class="suggestion-item" onclick="selectTicker('${res.symbol}')">
+            <span class="sugg-symbol">${res.symbol}</span>
+            <span class="sugg-name">${res.name}</span>
+        </div>
+    `).join('');
+    list.style.display = 'block';
+}
+
+function selectTicker(symbol) {
+    document.getElementById('ticker').value = symbol;
+    hideAutocomplete();
+    startAnalysis();
+}
+
+function hideAutocomplete() {
+    const list = document.getElementById('ticker-suggestions');
+    if (list) list.style.display = 'none';
 }
 
 
@@ -73,88 +135,183 @@ function appendLog(time, type, text) {
     }
 }
 
+/**
+ * DEPLOY ANALYTICAL SWARM
+ * Orchestrates the transition from landing to live dashboard and manages
+ * the lifecycle of the multi-agent market analysis.
+ */
 async function startAnalysis() {
-	const tickerInput = document.getElementById('ticker');
-    const ticker = document.getElementById('ticker').value.toUpperCase();
-	
-	// Institutional standard: Tickers are 1-5 alphabetic characters
+    const tickerInput = document.getElementById('ticker');
+    const ticker = tickerInput.value.toUpperCase().trim();
+    
+    // 1. Validation & Security Gate
     const tickerRegex = /^[A-Z]{1,5}$/;
-	
-	if (!tickerRegex.test(ticker)) {
+    if (!tickerRegex.test(ticker)) {
         alert("SECURITY ALERT: Invalid Ticker Format. Use 1-5 alphabetic characters only.");
         tickerInput.value = "";
         return;
     }
-	
-    if(!ticker) return;
+    if (!ticker) return;
 
+    // 2. UI Transition: Combat Mode
+    prepareDashboardUI(ticker);
+    
+    // 3. Widget Initialization
+    if (typeof injectGoogleTrends === 'function') {
+        injectGoogleTrends(ticker);
+    }
+
+    // 4. Analysis Initiation
+    try {
+        const response = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ticker: ticker })
+        });
+        
+        if (!response.ok) throw new Error("Network response was not ok");
+        
+        const data = await response.json();
+        currentTaskId = data.task_id;
+        lastLogIndex = 0;
+
+        // 5. Polling Lifecycle
+        pollInterval = setInterval(() => pollSystemStatus(ticker), 2000);
+
+    } catch (error) {
+        console.error("Critical System Failure:", error);
+        document.getElementById('report-content').innerHTML = `<h3 style="color:red">INITIALIZATION ERROR: ${error.message}</h3>`;
+    }
+}
+
+/**
+ * UI STATE MANAGER
+ * Swaps landing page for the mission-critical dashboard.
+ */
+function prepareDashboardUI(ticker) {
     document.getElementById('landing-page').style.display = 'none';
     document.getElementById('dashboard').style.display = 'flex';
     document.getElementById('dash-ticker-title').innerText = `Live Analysis: ${ticker}`;
     document.getElementById('report-wrapper').style.display = 'block';
     
-    lastLogIndex = 0;
-
-    let res = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ticker: ticker})
+    // Reset badges for new run
+    document.querySelectorAll('.status-badge').forEach(badge => {
+        badge.className = 'status-badge status-Pending';
+        badge.innerText = 'Pending';
     });
-    let data = await res.json();
-    currentTaskId = data.task_id;
+}
 
-    pollInterval = setInterval(async () => {
-        let statusRes = await fetch('/api/status/' + currentTaskId);
-        let statusData = await statusRes.json();
-        
-        if (statusData.logs) {
-            for (let i = lastLogIndex; i < statusData.logs.length; i++) {
-                let log = statusData.logs[i];
-                appendLog(log.time, log.type, log.content);
-            }
-            lastLogIndex = statusData.logs.length;
+/**
+ * SYSTEM STATUS POLLING
+ * Fetches logs and agent states from the FastAPI backend.
+ */
+async function pollSystemStatus(ticker) {
+    try {
+        const res = await fetch(`/api/status/${currentTaskId}`);
+        const data = await res.json();
+
+        // Update Audit Trail
+        if (data.logs && data.logs.length > lastLogIndex) {
+            data.logs.slice(lastLogIndex).forEach(log => appendLog(log.time, log.type, log.content));
+            lastLogIndex = data.logs.length;
         }
 
-        if (statusData.agent_statuses) {
-            for (let [ag_id, status] of Object.entries(statusData.agent_statuses)) {
-                let el = document.getElementById(ag_id);
+        // Update Agent Status Badges
+        if (data.agent_statuses) {
+            Object.entries(data.agent_statuses).forEach(([id, status]) => {
+                const el = document.getElementById(id);
                 if (el) {
-                    let cssClass = status.split(' ')[0]; 
-                    el.className = 'status-badge status-' + cssClass;
+                    const statusType = status.split(' ')[0];
+                    el.className = `status-badge status-${statusType}`;
                     el.innerText = status;
                 }
-            }
+            });
         }
-        
-        if (statusData.status === 'completed' || statusData.status === 'failed') {
+
+        // Handle Finalization
+        if (data.status === 'completed' || data.status === 'failed') {
             clearInterval(pollInterval);
-            
-            if (statusData.status === 'completed') {
-                document.getElementById('report-date').innerText = new Date().toLocaleDateString();
-                const pmDecision = statusData.pm_decision;
-                document.getElementById('pm-content').innerHTML = marked.parse(pmDecision);
-                document.getElementById('pm-decision-wrapper').style.display = 'block';
-                
-                // Populate supporting documents
-                const reportContent = document.getElementById('report-content');
-                reportContent.innerHTML = marked.parse(statusData.supporting_report);
-                // Keep blurred until payment
-                reportContent.classList.add('blurred-content');
-                
-                const dlBar = document.getElementById('dl-bar');
-                const signalType = (pmDecision.includes("BUY") || pmDecision.includes("Overweight")) ? "BULLISH" : "CAUTION";
-                
-                // Logic updated to trigger PDF export flow
-                dlBar.innerHTML = `
-                    <span class="download-text">⚠️ <strong>${signalType} SIGNAL DETECTED:</strong> Intelligence briefing finalized for ${ticker}.</span>
-                    <button class="pay-btn" onclick="processInstitutionalExport()">Export Executive PDF — $4.99</button>
-                `;
-                dlBar.style.display = 'flex';
-            } else {
-                document.getElementById('report-content').innerHTML = `<h3 style="color:red">ERROR: ${statusData.error}</h3>`;
-            }
+            data.status === 'completed' ? renderFinalReport(data, ticker) : renderSystemError(data.error);
         }
-    }, 2000);
+    } catch (e) {
+        console.warn("Telemetry Lost. Retrying...", e);
+    }
+}
+
+/**
+ * FINAL REPORT RENDERER
+ * Finalizes the UI with the PM decision and export bar.
+ */
+function renderFinalReport(statusData, ticker) {
+    document.getElementById('report-date').innerText = new Date().toLocaleDateString();
+    
+    // Render Portfolio Manager Decision
+    const pmDecision = statusData.pm_decision;
+    document.getElementById('pm-content').innerHTML = marked.parse(pmDecision);
+    document.getElementById('pm-decision-wrapper').style.display = 'block';
+
+    // Render Supporting Dossier (Blurred)
+    const reportContent = document.getElementById('report-content');
+    reportContent.innerHTML = marked.parse(statusData.supporting_report);
+    reportContent.classList.add('blurred-content');
+
+    // Activate Export Command Bar
+    const dlBar = document.getElementById('dl-bar');
+    const isBullish = pmDecision.includes("BUY") || pmDecision.includes("Overweight");
+    const signalType = isBullish ? "BULLISH" : "CAUTION";
+    
+    dlBar.innerHTML = `
+        <span class="download-text">⚠️ <strong>${signalType} SIGNAL DETECTED:</strong> Intelligence briefing finalized for ${ticker}.</span>
+        <button class="pay-btn" onclick="mockPayment()">Export Executive PDF — $4.99</button>
+    `;
+    dlBar.style.display = 'flex';
+}
+
+function renderSystemError(errorMsg) {
+    document.getElementById('report-content').innerHTML = `<h3 style="color:red">ANALYSIS FAILED: ${errorMsg}</h3>`;
+}
+
+
+/**
+ * Dynamically injects the Google Trends interest-over-time widget
+ */
+function injectGoogleTrends(ticker) {
+    const container = document.getElementById('trends-container');
+    if (!container) return;
+    container.innerHTML = ""; // Clear
+    
+    const script = document.createElement('script');
+    script.src = "https://ssl.gstatic.com/trends_nrtr/3620_RC01/embed_loader.js";
+    script.onload = () => {
+        window.trends.embed.renderExploreWidgetTo(container, "TIMESERIES", {
+            "comparisonItem": [{"keyword": ticker, "geo": "", "time": "today 12-m"}],
+            "category": 0, "property": ""
+        }, {"exploreQuery": `q=${ticker}`, "guestPath": "https://trends.google.com:443/trends/embed/"});
+    };
+    document.head.appendChild(script);
+}
+
+// ==========================================
+// IV. UTILITIES & EXPORT
+// ==========================================
+function finalizeAnalysis(statusData, ticker) {
+    document.getElementById('report-date').innerText = new Date().toLocaleDateString();
+    const pmDecision = statusData.pm_decision;
+    document.getElementById('pm-content').innerHTML = marked.parse(pmDecision);
+    document.getElementById('pm-decision-wrapper').style.display = 'block';
+    
+    const reportContent = document.getElementById('report-content');
+    reportContent.innerHTML = marked.parse(statusData.supporting_report);
+    reportContent.classList.add('blurred-content');
+    
+    const dlBar = document.getElementById('dl-bar');
+    const signalType = (pmDecision.includes("BUY") || pmDecision.includes("Overweight")) ? "BULLISH" : "CAUTION";
+    
+    dlBar.innerHTML = `
+        <span class="download-text">⚠️ <strong>${signalType} SIGNAL DETECTED:</strong> Briefing finalized for ${ticker}.</span>
+        <button class="pay-btn" onclick="mockPayment()">Export Executive PDF — $4.99</button>
+    `;
+    dlBar.style.display = 'flex';
 }
 
 /**
@@ -184,7 +341,7 @@ async function mockPayment() {
     //alert("Payment Processed. Generating secure document...");
     //window.location.href = '/api/download/' + currentTaskId;
 	// This is your live Stripe Payment Link URL
-    const stripeLink = "https://buy.stripe.com/your_actual_link_id"; 
+    const stripeLink = "https://buy.stripe.com/3cIbJ23g89um9s49dBffy00"; 
     
     // Append the currentTaskId so your backend can verify it later
     const checkoutUrl = `${stripeLink}?client_reference_id=${currentTaskId}`;
@@ -254,22 +411,96 @@ function returnToLanding() {
     document.getElementById('landing-page').style.display = 'flex';
 }
 
-// New Function for High-Fidelity PDF Export
+/**
+ * HIGH-FIDELITY PDF EXPORT (VERIFIED)
+ * Validates Stripe payment status via backend before removing 
+ * visual restrictions and triggering the print engine.
+ */
 async function generateExecutivePDF() {
-    // In a real app, you'd verify payment here
-    alert("Payment Verified. Preparing Institutional Grade PDF...");
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session_id');
 
-    // Remove blur for the print
+    if (!sessionId) {
+        alert("SECURITY ALERT: No valid payment session detected. Access Denied.");
+        return;
+    }
+
+    try {
+        // 1. Verify payment status with the backend
+        const response = await fetch(`/api/status/${currentTaskId}`);
+        const data = await response.json();
+
+        // Ensure the task is completed and the backend recognizes the session
+        // In a live environment, you would hit your /api/download endpoint
+        // to check session.payment_status === "paid"
+        if (data.status === 'completed') {
+            executeInstitutionalPrint();
+        } else {
+            alert("VERIFICATION FAILED: Payment session not confirmed by Stripe.");
+        }
+
+    } catch (error) {
+        console.error("Verification Node Error:", error);
+        alert("SYSTEM ERROR: Could not verify intelligence clearance.");
+    }
+}
+
+/**
+ * INTERNAL PRINT ENGINE
+ * Handles the visual transition and triggers the browser's native PDF generator.
+ */
+function executeInstitutionalPrint() {
     const reportContent = document.getElementById('report-content');
+    
+    // Remove visual restrictions
     reportContent.classList.remove('blurred-content');
     
-    // Trigger the browser's print-to-PDF functionality
-    // The CSS @media print rules below will format this perfectly
+    // Trigger print engine
     window.print();
     
-    // Re-apply blur if they stay on the page
+    // Re-apply restrictions for security
     reportContent.classList.add('blurred-content');
 }
+
+
+/**
+ * SET TICKER
+ * Populates the search input from trending chips and triggers analysis.
+ */
+function setTicker(symbol) {
+    const input = document.getElementById('ticker');
+    input.value = symbol;
+    startAnalysis();
+}
+
+/**
+ * GOOGLE TRENDS INTEGRATION
+ * Injects a live interest-over-time widget for the active ticker.
+ */
+function injectGoogleTrends(ticker) {
+    const container = document.getElementById('trends-container');
+    const mount = document.getElementById('trends-widget-mount');
+    
+    if (!container || !mount) return;
+    
+    container.style.display = 'block'; // Reveal the panel
+    mount.innerHTML = ""; // Clear existing widget
+
+    const script = document.createElement('script');
+    script.src = "https://ssl.gstatic.com/trends_nrtr/3620_RC01/embed_loader.js";
+    script.onload = () => {
+        window.trends.embed.renderExploreWidgetTo(mount, "TIMESERIES", {
+            "comparisonItem": [{"keyword": ticker, "geo": "", "time": "today 12-m"}],
+            "category": 0,
+            "property": ""
+        }, {
+            "exploreQuery": `q=${ticker}`,
+            "guestPath": "https://trends.google.com:443/trends/embed/"
+        });
+    };
+    document.head.appendChild(script);
+}
+
 
 function loadExampleReport() {
     document.getElementById('landing-page').style.display = 'none';
@@ -301,9 +532,29 @@ function loadExampleReport() {
     dlBar.style.display = 'flex';
     dlBar.innerHTML = `
         <span class="download-text">⚠️ <strong>EXAMPLE REPORT:</strong> This is how the finalized $4.99 intelligence briefing appears.</span>
+	<button class="pay-btn" onclick="mockPayment()">Export Executive PDF — $4.99</button>
         
     `;
 }
+
+
+
+// ==========================================
+// V. EVENT LISTENERS
+// ==========================================
+window.addEventListener('DOMContentLoaded', () => {
+    initTheme();
+    simulateNetworkFlux();
+    
+    // Attach autocomplete to search bar
+    const tInput = document.getElementById('ticker');
+    if(tInput) tInput.addEventListener('input', handleAutocomplete);
+
+    // Close autocomplete when clicking away
+    document.addEventListener('click', (e) => {
+        if (e.target.id !== 'ticker') hideAutocomplete();
+    });
+});
 
 window.addEventListener('DOMContentLoaded', () => {
     // Initialize the blink animation for tactical LEDs

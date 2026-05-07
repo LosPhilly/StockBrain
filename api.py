@@ -113,11 +113,19 @@ def run_trading_analysis(task_id: str, ticker: str):
         }
         analysis_tasks[task_id]["pm_decision"] = "" 
 
+        # api.py - Modified add_log function
         def add_log(msg_type, content):
             t = datetime.datetime.now().strftime("%H:%M:%S")
-            text = str(content).replace('\n', ' ')
-            if len(text) > 130: text = text[:127] + "..."
-            analysis_tasks[task_id]["logs"].append({"time": t, "type": msg_type, "content": text})
+            # Convert content to string and preserve line breaks for the full conversation
+            text = str(content) 
+            
+            # TRUNCATION REMOVED: We no longer slice the string at 130 characters.
+            # This ensures the full agent dialectic is preserved in the task memory.
+            analysis_tasks[task_id]["logs"].append({
+                "time": t, 
+                "type": msg_type, 
+                "content": text
+            })
 
         add_log("System", f"Initialized LangGraph framework for {ticker}")
         
@@ -236,7 +244,7 @@ import os
 from fastapi import BackgroundTasks, HTTPException
 from fastapi.responses import FileResponse
 
-@app.get("/api/download/{task_id}")
+@app.get("/api/download")
 async def download_report(task_id: str, session_id: str, background_tasks: BackgroundTasks):
     # 1. Verification Logic
     if not session_id:

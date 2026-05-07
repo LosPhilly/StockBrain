@@ -567,3 +567,41 @@ body.light-mode #terms-modal {
 /* Scrollbar polish for the modal content */
 #terms-modal::-webkit-scrollbar { width: 6px; }
 #terms-modal::-webkit-scrollbar-thumb { background: var(--accent-blue); }
+
+/* ============================================================
+   TRENDING CHIPS
+   ============================================================ */
+.trending-container {
+    margin-top: 25px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-family: 'Consolas', monospace;
+    font-size: 0.85rem;
+}
+
+.trending-label {
+    color: var(--text-muted);
+    letter-spacing: 1px;
+}
+
+.trending-chips {
+    display: flex;
+    gap: 10px;
+}
+
+.chip {
+    background: rgba(56, 189, 248, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--accent-blue);
+    padding: 5px 12px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.chip:hover {
+    background: var(--accent-blue);
+    color: #FFFFFF;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+}
