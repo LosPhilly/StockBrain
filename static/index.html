@@ -23,6 +23,24 @@
         ☀️ Light Mode
     </button>
 
+    <div id="terms-modal" class="panel" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:2000; width:90%; max-width:800px; max-height:80vh; overflow-y:auto; box-shadow: 0 0 50px rgba(0,0,0,0.8);">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:10px; margin-bottom:20px;">
+            <h3 class="panel-title" style="margin:0;">SYSTEM OPERATIONAL TERMS & CONDITIONS</h3>
+            <button onclick="closeTerms()" class="tactical-btn">CLOSE [X]</button>
+        </div>
+        <div class="disclaimer-box" style="font-size:0.85rem; border:none; padding:0;">
+            <h4>1. ANALYTICAL SCOPE</h4>
+            <p>StockBrain utilizes a multi-agent swarm architecture to process market data. All outputs are algorithmic syntheses and do not constitute professional financial advice.</p>
+            <h4>2. INTELLECTUAL PROPERTY</h4>
+            <p>The agent logic and report formatting are proprietary. Unauthorized reverse engineering or redistribution is prohibited.</p>
+            <h4>3. TRANSACTIONAL TERMS</h4>
+            <p>The $4.99 fee covers a single institutional-grade PDF export. Due to the computational resources required for live agent deployment, all sales are final.</p>
+            <h4>4. LIMITATION OF LIABILITY</h4>
+            <p>StockBrain AI and its operators are not liable for market losses. All trading involves risk.</p>
+        </div>
+    </div>
+    <div id="modal-overlay" onclick="closeTerms()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1999;"></div>
+
     <div id="landing-page">
         <div class="logo-container">
             <img src="/assets/logo/stockBrainWhite.png" alt="StockBrain Logo" class="sb-logo">
@@ -97,12 +115,51 @@
                 </div>
             </div>
         </div>
+
+        <div id="landing-extensions" class="section-container">
+            <div class="pricing-section">
+                <h2 class="section-title">Institutional Pricing</h2>
+                <div class="pricing-card">
+                    <h3>Single Intelligence Export</h3>
+                    <div class="price">$4.99 <span>/ REPORT</span></div>
+                    <ul class="pricing-features">
+                        <li>Full Adversarial Syndicate Logs</li>
+                        <li>Strategic Exit & Risk Parameters</li>
+                        <li>High-Fidelity PDF Export</li>
+                        <li>No Subscription Required</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="how-works-section">
+                <h2 class="section-title">Operational Protocol</h2>
+                <div class="protocol-grid">
+                    <div class="step">
+                        <span class="step-num">01</span>
+                        <p><strong>Deploy:</strong> Enter a ticker to spin up a dedicated agent swarm.</p>
+                    </div>
+                    <div class="step">
+                        <span class="step-num">02</span>
+                        <p><strong>Monitor:</strong> Watch the live dialectic debate and technical extraction.</p>
+                    </div>
+                    <div class="step">
+                        <span class="step-num">03</span>
+                        <p><strong>Finalize:</strong> Receive the PM decision and export the full dossier.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div id="dashboard">
+    <div id="dashboard" style="display:none;">
         <div class="dashboard-header">
-            <img src="/assets/logo/stockBrainWhite.png" alt="StockBrain Logo" class="sb-logo">
-            <h2 id="dash-ticker-title">Live Analysis</h2>
+            <div class="header-left" onclick="returnToLanding()" style="cursor: pointer;">
+                <img src="/assets/logo/stockBrainWhite.png" alt="StockBrain Logo" class="sb-logo">
+            </div>
+            <div class="header-right">
+                <button class="tactical-btn" onclick="returnToLanding()">+ NEW ANALYSIS</button>
+                <h2 id="dash-ticker-title" style="display: inline-block; margin-left: 20px;">Live Analysis</h2>
+            </div>
         </div>
     
         <div class="top-grid">
@@ -121,13 +178,13 @@
             
             <div class="panel msg-pane">
                 <h3 class="panel-title">Live Audit Trail</h3>
-                <div id="log-scroll-container" style="flex: 1; overflow-y:auto; padding-right: 5px;">
+                <div id="log-scroll-container">
                     <table style="width:100%; border-collapse:collapse;"><tbody id="log-table-body"></tbody></table>
                 </div>
             </div>
         </div>
         
-        <div id="pm-decision-wrapper" class="protect-text">
+        <div id="pm-decision-wrapper" class="protect-text" style="display:none;">
             <div class="pm-card">
                 <div class="pm-header">
                     <h2 class="pm-title">Portfolio Manager Decision</h2>
@@ -137,7 +194,7 @@
             </div>
         </div>
 
-        <div class="panel report-pane protect-text" id="report-wrapper">
+        <div class="panel report-pane protect-text" id="report-wrapper" style="display:none;">
             <h3 class="panel-title">Supporting Agent Documentation</h3>
             <div id="report-content" class="markdown-body blurred-content">
                 <div class="waiting-text">Awaiting data compilation from the analytical swarm...</div>
@@ -146,9 +203,34 @@
     </div>
     
     <div class="download-bar" id="dl-bar" style="display:none;">
-        <span class="download-text">Executive Briefing Finalized. Export structured intelligence report (PDF/Markdown).</span>
-        <button class="pay-btn" onclick="mockPayment()">Pay $4.99 to Export</button>
+        <span class="download-text">Executive Briefing Finalized. Export structured intelligence report (PDF).</span>
+        <button class="pay-btn" onclick="processInstitutionalExport()">Pay $4.99 to Export PDF</button>
     </div>
+
+    <footer class="system-footer">
+        <div class="footer-content">
+            <div class="footer-top">
+                <div class="footer-brand" onclick="returnToLanding()" style="cursor:pointer;">
+                    <img src="/assets/logo/stockBrainWhite.png" alt="StockBrain Logo" class="sb-logo-footer">
+                    <p>High-Integrity Market Intelligence</p>
+                </div>
+                <div class="footer-links">
+                    <a href="#" onclick="returnToLanding()">Home</a>
+                    <a href="mailto:thebrain@stockbrain.io">Support</a>
+                    <a href="#" onclick="showTerms(event)">Terms</a>
+                </div>
+            </div>
+            
+            <div class="disclaimer-box">
+                <p><strong>FINANCIAL DISCLOSURE:</strong> StockBrain is an AI-driven analytical tool provided for informational purposes only. It does not constitute financial, investment, or legal advice. All trading involves significant risk. Past performance of AI agents does not guarantee future market results.</p>
+                <p><strong>OPERATIONAL NOTICE:</strong> Mission-critical architecture is deployed. System logs are retained for forensic audit purposes. Institutional grade PDF reports are generated via native browser engine.</p>
+            </div>
+            
+            <div class="footer-bottom">
+                <span>© 2026 STOCKBRAIN AI. SECURE NODE: 505-SFT-NET.</span>
+            </div>
+        </div>
+    </footer>
 
     <script src="/static/scripts.js"></script>
 </body>

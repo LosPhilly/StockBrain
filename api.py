@@ -3,10 +3,12 @@ from fastapi.responses import FileResponse, PlainTextResponse # Removed HTMLResp
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from fastapi.staticfiles import StaticFiles
+from fpdf import FPDF
 import uuid
 import datetime
 from dotenv import load_dotenv
 import os
+import stripe
 load_dotenv() 
 
 from tradingagents.graph.trading_graph import TradingAgentsGraph
@@ -14,6 +16,7 @@ from tradingagents.default_config import DEFAULT_CONFIG
 
 # Set this to "PROD" in your environment variables when deploying
 ENV = os.getenv("ENV", "DEV")
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 if ENV == "PROD":
     # Disable Swagger (/docs) and ReDoc (/redoc) entirely
@@ -77,6 +80,22 @@ def build_complete_downloadable_report(final_state, ticker):
     if risk.get("judge_decision"): 
         pm_decision = f"## V. Portfolio Manager Decision\n### Portfolio Manager\n{risk['judge_decision']}\n\n---\n\n"
     return header + pm_decision + supporting
+	
+	
+def generate_pdf_from_markdown(markdown_text, output_path):
+    pdf = FPDF()
+    pdf.add_page()
+    # Use a monospace font for that tactical look
+    pdf.set_font("Courier", size=11) 
+    
+    # Simple line-by-line rendering (you can expand this for bold/headers)
+    for line in markdown_text.split('\n'):
+        # fpdf2 handles UTF-8 better if you add a Unicode font, 
+        # but Courier is safe for standard ASCII
+        pdf.multi_cell(0, 10, txt=line)
+    
+    pdf.output(output_path)
+	
 
 def run_trading_analysis(task_id: str, ticker: str):
     try:
@@ -183,6 +202,10 @@ def run_trading_analysis(task_id: str, ticker: str):
 async def serve_search_page():
     # Serve the external HTML file
     return FileResponse("static/index.html")
+	
+@app.get("/terms")
+async def serve_terms():
+    return FileResponse("static/terms.html")
 
 @app.post("/api/analyze")
 async def start_analysis(req: AnalyzeRequest, background_tasks: BackgroundTasks):
@@ -208,14 +231,56 @@ async def get_status(task_id: str):
         
     return resp
 
+import tempfile
+import os
+from fastapi import BackgroundTasks, HTTPException
+from fastapi.responses import FileResponse
+
 @app.get("/api/download/{task_id}")
-async def download_report(task_id: str):
-    if task_id not in analysis_tasks or analysis_tasks[task_id]["status"] != "completed":
-        raise HTTPException(status_code=400, detail="Report not ready or not found")
+async def download_report(task_id: str, session_id: str, background_tasks: BackgroundTasks):
+    # 1. Verification Logic
+    if not session_id:
+        raise HTTPException(status_code=402, detail="Payment session required")
     
-    markdown_content = analysis_tasks[task_id]["full_download_report"]
-    return PlainTextResponse(
-        content=markdown_content, 
-        media_type="text/markdown", 
-        headers={"Content-Disposition": f"attachment; filename=StockBrain_Analysis_{task_id[:8]}.md"}
+    try:
+        # Retrieve session and verify payment status
+        session = stripe.checkout.Session.retrieve(session_id)
+        
+        # SECURITY CRITICAL: Ensure the session is paid AND matches the task_id
+        if session.payment_status != "paid":
+            raise HTTPException(status_code=402, detail="Payment not confirmed")
+        
+        if session.client_reference_id != task_id:
+            raise HTTPException(status_code=403, detail="Unauthorized: Report ID mismatch")
+            
+    except Exception as e:
+        # Log the error internally for debugging
+        print(f"Stripe Verification Error: {e}") 
+        raise HTTPException(status_code=400, detail="Invalid session verification")
+
+    # 2. Task Readiness Check
+    if task_id not in analysis_tasks or analysis_tasks[task_id]["status"] != "completed":
+        raise HTTPException(status_code=404, detail="Intelligence brief not found or incomplete")
+
+    # 3. Secure PDF Generation & Serving
+    # Use tempfile to create a unique path that doesn't persist forever
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+        pdf_path = tmp.name
+        report_content = analysis_tasks[task_id]["full_download_report"]
+        
+        try:
+            # Generate the professional, monospace briefing
+            generate_pdf_from_markdown(report_content, pdf_path)
+        except Exception as e:
+            print(f"PDF Rendering Error: {e}")
+            raise HTTPException(status_code=500, detail="Failed to render PDF briefing")
+
+    # 4. Automated Cleanup
+    # BackgroundTasks runs AFTER the response is sent to ensure the file is served before deletion
+    background_tasks.add_task(os.remove, pdf_path)
+
+    return FileResponse(
+        path=pdf_path,
+        filename=f"StockBrain_Executive_Briefing_{task_id[:8]}.pdf",
+        media_type="application/pdf"
     )

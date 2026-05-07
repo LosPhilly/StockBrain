@@ -262,3 +262,255 @@ body.light-mode .log-content { color: var(--text-main); text-shadow: none; }
 @media (max-width: 600px) {
     .agent-grid { grid-template-columns: 1fr; }
 }
+
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
+.tactical-btn {
+    background: transparent;
+    border: 1px solid var(--accent-blue);
+    color: var(--accent-blue);
+    padding: 8px 15px;
+    font-family: 'Consolas', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.tactical-btn:hover {
+    background: rgba(56, 189, 248, 0.1);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+}
+
+/* Ensure the header logo doesn't look like a static image */
+.header-left:hover .sb-logo {
+    filter: drop-shadow(0 0 8px var(--accent-blue));
+    transform: scale(1.02);
+}
+
+/* ============================================================
+   IX. INSTITUTIONAL PDF EXPORT (PRINT)
+   ============================================================ */
+@media print {
+    /* Hide non-essential UI */
+    #theme-toggle, .tactical-btn, .download-bar, .search-container {
+        display: none !important;
+    }
+
+    body {
+        background: white !important;
+        color: #0A1128 !important;
+    }
+
+    #dashboard {
+        display: flex !important;
+        width: 100% !important;
+        max-width: none !important;
+        padding: 0 !important;
+    }
+
+    .panel {
+        break-inside: avoid;
+        border: 1px solid #1e3a8a !important;
+        background: #f8fafc !important;
+        margin-bottom: 20px;
+    }
+
+    .blurred-content {
+        filter: none !important;
+        opacity: 1 !important;
+        mask-image: none !important;
+    }
+
+    .pm-card {
+        border-left: 10px solid #F59E0B !important;
+        background: #f1f5f9 !important;
+        page-break-before: always;
+    }
+}
+
+/* ============================================================
+   X. FOOTER & DISCLOSURE STYLES
+   ============================================================ */
+.system-footer {
+    width: 100%;
+    background: #050A18;
+    border-top: 1px solid var(--border-color);
+    padding: 60px 20px 20px;
+    margin-top: 80px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+body.light-mode .system-footer {
+    background: #F1F5F9;
+    border-top: 1px solid #CBD5E1;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 40px;
+}
+
+.sb-logo-footer { height: 35px; margin-bottom: 10px; }
+
+.footer-links a {
+    color: var(--accent-blue);
+    text-decoration: none;
+    margin-left: 20px;
+}
+
+.disclaimer-box {
+    border-left: 3px solid var(--border-color);
+    padding-left: 20px;
+    margin-bottom: 40px;
+    line-height: 1.6;
+    font-family: 'Consolas', monospace;
+    font-size: 0.75rem;
+}
+
+.footer-bottom {
+    text-align: center;
+    border-top: 1px solid rgba(56, 189, 248, 0.1);
+    padding-top: 20px;
+    letter-spacing: 1px;
+}
+
+/* Pricing & Protocol Grid */
+.pricing-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--accent-gold);
+    padding: 40px;
+    border-radius: var(--border-radius);
+    max-width: 400px;
+    margin: 20px auto;
+}
+
+.price {
+    font-size: 2.5rem;
+    color: var(--text-heading);
+    margin: 20px 0;
+    font-weight: bold;
+}
+
+.price span { font-size: 1rem; color: var(--text-muted); }
+
+.pricing-features {
+    list-style: none;
+    padding: 0;
+    text-align: left;
+    margin-bottom: 0;
+}
+
+.pricing-features li::before {
+    content: "✓";
+    color: var(--accent-green);
+    margin-right: 10px;
+}
+
+.protocol-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.step-num {
+    font-family: 'Consolas', monospace;
+    color: var(--accent-blue);
+    font-size: 1.5rem;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 10px;
+}
+
+/* ============================================================
+   XI. LIVE AUDIT TRAIL CONSTRAINTS (FIX FOR SCROLLING)
+   ============================================================ */
+.msg-pane {
+    height: 450px; /* Constrains the panel to a fixed monitor height */
+    display: flex;
+    flex-direction: column;
+}
+
+#log-scroll-container {
+    flex: 1; /* Fills remaining space in the panel */
+    overflow-y: auto; /* Enables vertical scrolling */
+    padding-right: 5px;
+}
+
+.log-row {
+    font-family: 'Consolas', monospace;
+    font-size: 0.8rem;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+}
+
+.log-time {
+    width: 85px;
+    color: var(--text-muted);
+    padding: 4px 0;
+}
+
+.log-content {
+    word-wrap: break-word;
+    padding: 4px 0 4px 10px;
+}
+
+/* ============================================================
+   XII. TACTICAL MODAL OVERLAY (TERMS & CONDITIONS)
+   ============================================================ */
+#terms-modal {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    padding: 30px;
+    border-radius: var(--border-radius);
+    color: var(--text-main);
+}
+
+body.light-mode #terms-modal {
+    background: #FFFFFF;
+}
+
+#terms-modal h4 {
+    color: var(--accent-blue);
+    margin-top: 20px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+#modal-overlay {
+    backdrop-filter: blur(5px);
+    transition: opacity 0.3s ease;
+}
+
+/* ============================================================
+   XIII. PRINT ENHANCEMENTS (PDF FIDELITY)
+   ============================================================ */
+@media print {
+    /* Hide the footer and all landing sections during export */
+    .system-footer, #landing-extensions, #landing-page, #modal-overlay, #terms-modal {
+        display: none !important;
+    }
+    
+    #dashboard {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .panel {
+        box-shadow: none !important;
+        page-break-inside: avoid;
+    }
+}

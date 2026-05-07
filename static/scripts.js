@@ -47,7 +47,18 @@ function appendLog(time, type, text) {
 }
 
 async function startAnalysis() {
+	const tickerInput = document.getElementById('ticker');
     const ticker = document.getElementById('ticker').value.toUpperCase();
+	
+	// Institutional standard: Tickers are 1-5 alphabetic characters
+    const tickerRegex = /^[A-Z]{1,5}$/;
+	
+	if (!tickerRegex.test(ticker)) {
+        alert("SECURITY ALERT: Invalid Ticker Format. Use 1-5 alphabetic characters only.");
+        tickerInput.value = "";
+        return;
+    }
+	
     if(!ticker) return;
 
     document.getElementById('landing-page').style.display = 'none';
@@ -97,17 +108,19 @@ async function startAnalysis() {
                 document.getElementById('pm-content').innerHTML = marked.parse(pmDecision);
                 document.getElementById('pm-decision-wrapper').style.display = 'block';
                 
-                // Apply blurred preview for conversion
+                // Populate supporting documents
                 const reportContent = document.getElementById('report-content');
                 reportContent.innerHTML = marked.parse(statusData.supporting_report);
+                // Keep blurred until payment
                 reportContent.classList.add('blurred-content');
                 
                 const dlBar = document.getElementById('dl-bar');
-                const signalType = pmDecision.includes("BUY") || pmDecision.includes("Overweight") ? "BULLISH" : "CAUTION";
+                const signalType = (pmDecision.includes("BUY") || pmDecision.includes("Overweight")) ? "BULLISH" : "CAUTION";
                 
+                // Logic updated to trigger PDF export flow
                 dlBar.innerHTML = `
-                    <span class="download-text">⚠️ <strong>${signalType} SIGNAL DETECTED:</strong> Unlock full adversarial debate and exit strategy briefing.</span>
-                    <button class="pay-btn" onclick="mockPayment()">Get Executive Intelligence — $4.99</button>
+                    <span class="download-text">⚠️ <strong>${signalType} SIGNAL DETECTED:</strong> Intelligence briefing finalized for ${ticker}.</span>
+                    <button class="pay-btn" onclick="processInstitutionalExport()">Export Executive PDF — $4.99</button>
                 `;
                 dlBar.style.display = 'flex';
             } else {
@@ -115,6 +128,25 @@ async function startAnalysis() {
             }
         }
     }, 2000);
+}
+
+/**
+ * Handles the transition from a blurred web preview to a 
+ * professional-grade PDF export of the current scan.
+ */
+async function processInstitutionalExport() {
+    // In production, this would trigger your payment gateway (e.g., Stripe)
+    alert("Payment Processed. Generating Secure Institutional Briefing...");
+
+    // 1. Remove visual restrictions for the export
+    const reportContent = document.getElementById('report-content');
+    reportContent.classList.remove('blurred-content');
+
+    // 2. Trigger the browser print engine (using print-specific CSS to format)
+    window.print();
+
+    // 3. Re-apply restrictions if the user continues to view the dashboard
+    reportContent.classList.add('blurred-content');
 }
 
 document.addEventListener('keydown', function(e) {
@@ -144,6 +176,51 @@ function simulateNetworkFlux() {
 
         agentDisplay.innerText = count;
     }, 2500); 
+}
+
+// Function to return to the landing page and reset the swarm state
+function returnToLanding() {
+    // 1. Stop any active polling
+    if (pollInterval) clearInterval(pollInterval);
+    
+    // 2. Clear task data
+    currentTaskId = "";
+    lastLogIndex = 0;
+
+    // 3. Reset UI elements
+    document.getElementById('ticker').value = "";
+    document.getElementById('log-table-body').innerHTML = "";
+    document.getElementById('pm-content').innerHTML = "";
+    document.getElementById('pm-decision-wrapper').style.display = 'none';
+    document.getElementById('dl-bar').style.display = 'none';
+    
+    // 4. Reset status badges to Pending
+    const badges = document.querySelectorAll('.status-badge');
+    badges.forEach(badge => {
+        badge.className = 'status-badge status-Pending';
+        badge.innerText = 'PENDING';
+    });
+
+    // 5. Switch visibility
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('landing-page').style.display = 'flex';
+}
+
+// New Function for High-Fidelity PDF Export
+async function generateExecutivePDF() {
+    // In a real app, you'd verify payment here
+    alert("Payment Verified. Preparing Institutional Grade PDF...");
+
+    // Remove blur for the print
+    const reportContent = document.getElementById('report-content');
+    reportContent.classList.remove('blurred-content');
+    
+    // Trigger the browser's print-to-PDF functionality
+    // The CSS @media print rules below will format this perfectly
+    window.print();
+    
+    // Re-apply blur if they stay on the page
+    reportContent.classList.add('blurred-content');
 }
 
 function loadExampleReport() {
@@ -176,7 +253,7 @@ function loadExampleReport() {
     dlBar.style.display = 'flex';
     dlBar.innerHTML = `
         <span class="download-text">⚠️ <strong>EXAMPLE REPORT:</strong> This is how the finalized $4.99 intelligence briefing appears.</span>
-        <button class="pay-btn" onclick="alert('In a real scenario, this would trigger payment.')">Test Pay $4.99</button>
+        
     `;
 }
 
