@@ -338,18 +338,15 @@ document.addEventListener('keydown', function(e) {
 });
 
 async function mockPayment() {
-    // SECURITY: Ensure currentTaskId is populated before redirecting
-    if (!currentTaskId) {
-        alert("CRITICAL ERROR: Analytical Task ID lost. Please restart analysis.");
-        return;
-    }
-
+    //alert("Payment Processed. Generating secure document...");
+    //window.location.href = '/api/download/' + currentTaskId;
+	// This is your live Stripe Payment Link URL
     const stripeLink = "https://buy.stripe.com/3cIbJ23g89um9s49dBffy00"; 
     
-    // The client_reference_id is the ONLY way the backend knows WHICH report you paid for
+    // Append the currentTaskId so your backend can verify it later
     const checkoutUrl = `${stripeLink}?client_reference_id=${currentTaskId}`;
     
-    console.log(`Redirecting to Secure Payment Node for Task: ${currentTaskId}`);
+    // Redirect the user to Stripe
     window.location.href = checkoutUrl;
 }
 
