@@ -338,15 +338,18 @@ document.addEventListener('keydown', function(e) {
 });
 
 async function mockPayment() {
-    //alert("Payment Processed. Generating secure document...");
-    //window.location.href = '/api/download/' + currentTaskId;
-	// This is your live Stripe Payment Link URL
+    // SECURITY: Ensure currentTaskId is populated before redirecting
+    if (!currentTaskId) {
+        alert("CRITICAL ERROR: Analytical Task ID lost. Please restart analysis.");
+        return;
+    }
+
     const stripeLink = "https://buy.stripe.com/3cIbJ23g89um9s49dBffy00"; 
     
-    // Append the currentTaskId so your backend can verify it later
+    // The client_reference_id is the ONLY way the backend knows WHICH report you paid for
     const checkoutUrl = `${stripeLink}?client_reference_id=${currentTaskId}`;
     
-    // Redirect the user to Stripe
+    console.log(`Redirecting to Secure Payment Node for Task: ${currentTaskId}`);
     window.location.href = checkoutUrl;
 }
 
@@ -412,37 +415,59 @@ function returnToLanding() {
 }
 
 /**
- * HIGH-FIDELITY PDF EXPORT (VERIFIED)
- * Validates Stripe payment status via backend before removing 
- * visual restrictions and triggering the print engine.
+ * HIGH-FIDELITY PDF EXPORT (SECURE VERIFICATION)
+ * Performs a mandatory server-side handshake to confirm Stripe payment 
+ * before granting clearance to unblur and print the dossier.
  */
 async function generateExecutivePDF() {
     const urlParams = new URLSearchParams(window.location.search);
     const sessionId = urlParams.get('session_id');
 
+    // 1. Check for presence of session token in the return URL
     if (!sessionId) {
-        alert("SECURITY ALERT: No valid payment session detected. Access Denied.");
+        alert("SECURITY ALERT: No valid payment session detected. Intelligence remains classified.");
         return;
     }
 
     try {
-        // 1. Verify payment status with the backend
-        const response = await fetch(`/api/status/${currentTaskId}`);
-        const data = await response.json();
+        // 2. Request verification and PDF generation from the secure endpoint
+        // This hits your FastAPI logic that checks session.payment_status == "paid"
+        const response = await fetch(`/api/download?task_id=${currentTaskId}&session_id=${sessionId}`);
 
-        // Ensure the task is completed and the backend recognizes the session
-        // In a live environment, you would hit your /api/download endpoint
-        // to check session.payment_status === "paid"
-        if (data.status === 'completed') {
+        if (response.ok) {
+            // Success: Server confirmed Stripe payment and task_id match
+            alert("PAYMENT VERIFIED: Intelligence clearance granted. Preparing Institutional Briefing...");
             executeInstitutionalPrint();
+        } else if (response.status === 402) {
+            alert("ACCESS DENIED: Payment required or transaction not yet confirmed by Stripe.");
+        } else if (response.status === 403) {
+            alert("SECURITY ALERT: Report ID mismatch. Unauthorized access attempt logged.");
         } else {
-            alert("VERIFICATION FAILED: Payment session not confirmed by Stripe.");
+            const errorData = await response.json();
+            alert(`SYSTEM ERROR: ${errorData.detail || "Unable to verify clearance."}`);
         }
 
     } catch (error) {
-        console.error("Verification Node Error:", error);
-        alert("SYSTEM ERROR: Could not verify intelligence clearance.");
+        console.error("Verification Node Communication Failure:", error);
+        alert("SYSTEM ERROR: Clearance node offline. Please check your connection.");
     }
+}
+
+/**
+ * INTERNAL PRINT ENGINE
+ * Executes the visual transition for the verified user.
+ */
+function executeInstitutionalPrint() {
+    const reportContent = document.getElementById('report-content');
+    
+    // Total visibility for verified personnel
+    reportContent.classList.remove('blurred-content');
+    
+    // Trigger native browser print-to-PDF engine
+    window.print();
+    
+    // Re-lock the screen after the print job is sent
+    reportContent.classList.add('blurred-content');
 }
 
 /**
@@ -542,6 +567,28 @@ function loadExampleReport() {
 // ==========================================
 // V. EVENT LISTENERS
 // ==========================================
+
+window.addEventListener('DOMContentLoaded', () => {
+    initTheme();
+    simulateNetworkFlux();
+    
+    // --- NEW: AUTO-VERIFY ON RETURN FROM STRIPE ---
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('session_id')) {
+        // If the user just paid and was redirected back, trigger the verification
+        console.log("Payment session detected. Initializing secure unblur...");
+        generateExecutivePDF(); 
+    }
+    // ----------------------------------------------
+
+    const tInput = document.getElementById('ticker');
+    if(tInput) tInput.addEventListener('input', handleAutocomplete);
+
+    document.addEventListener('click', (e) => {
+        if (e.target.id !== 'ticker') hideAutocomplete();
+    });
+});
+
 window.addEventListener('DOMContentLoaded', () => {
     initTheme();
     simulateNetworkFlux();

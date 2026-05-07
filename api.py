@@ -31,7 +31,8 @@ else:
 	
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8000", "stockbrain.io"], 
+    # Ensure your live domain is listed here without a trailing slash
+    allow_origins=["http://localhost:8000", "https://stockbrain.io"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
