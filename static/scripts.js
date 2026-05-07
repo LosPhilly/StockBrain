@@ -36,6 +36,33 @@ function handleEnter(event) {
     }
 }
 
+
+
+/**
+ * Opens the tactical modal overlay for Terms of Service.
+ * Prevents default anchor behavior to keep the user's dashboard position.
+ */
+function showTerms(e) {
+    if (e) e.preventDefault(); // This stops the '#' jump
+    
+    const modal = document.getElementById('terms-modal');
+    const overlay = document.getElementById('modal-overlay');
+    
+    if (modal && overlay) {
+        modal.style.display = 'block';
+        overlay.style.display = 'block';
+    }
+}
+
+/**
+ * Closes the modal and restores focus to the dashboard/landing page.
+ */
+function closeTerms() {
+    document.getElementById('terms-modal').style.display = 'none';
+    document.getElementById('modal-overlay').style.display = 'none';
+}
+
+
 function appendLog(time, type, text) {
     const tableBody = document.getElementById('log-table-body');
     tableBody.insertAdjacentHTML('beforeend', `<tr class="log-row"><td class="log-time">${time}</td><td class="log-type">${type}</td><td class="log-content">${text}</td></tr>`);
@@ -159,19 +186,32 @@ async function mockPayment() {
 }
 
 // Updated Organic, High-Variance Flux
+/**
+ * Simulates real-time network flux for the analytical swarm.
+ * Engineered for server-side stability at StockBrain.io.
+ */
 function simulateNetworkFlux() {
+    // Force a fresh grab of the element
     const agentDisplay = document.getElementById('agent-count');
-    if (!agentDisplay) return;
+    
+    if (!agentDisplay) {
+        // If not found, the DOM might still be loading; retry in 500ms
+        setTimeout(simulateNetworkFlux, 500);
+        return;
+    }
 
     let count = 14;
 
-    setInterval(() => {
+    // Ensure we don't have multiple intervals running on the live server
+    if (window.fluxInterval) clearInterval(window.fluxInterval);
+
+    window.fluxInterval = setInterval(() => {
         // High-variance: Shift by -3 to +3 for organic movement
         const flux = Math.floor(Math.random() * 7) - 3; 
         count += flux;
 
-        // Realistic range: 4 (quiet) to 28 (surge)
-        if (count < 4) count = 6;
+        // Realistic range: 6 to 28 based on active deployment
+        if (count < 6) count = 8;
         if (count > 28) count = 22;
 
         agentDisplay.innerText = count;
@@ -258,6 +298,7 @@ function loadExampleReport() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+    // Initialize the blink animation for tactical LEDs
     const leds = document.querySelectorAll('.blink-led');
     leds.forEach(led => {
         led.style.animation = 'none';
@@ -265,5 +306,6 @@ window.addEventListener('DOMContentLoaded', () => {
         led.style.animation = null; 
     });
     
+    // Start the agent swarm flux simulation
     simulateNetworkFlux(); 
 });
