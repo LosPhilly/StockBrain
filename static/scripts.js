@@ -359,10 +359,10 @@ async function mockPayment() {
     // FORENSIC LOG: Verify the ID exists before redirecting
     //console.log("CRITICAL: Redirecting to Stripe for Task ID:", currentTaskId);
     
-    if (!currentTaskId) {
-        alert("SYSTEM ERROR: Analysis context lost. Please restart the scan.");
-        return;
-    }
+    // if (!currentTaskId) {
+    //     alert("SYSTEM ERROR: Analysis context lost. Please restart the scan.");
+     //    return;
+     //}
 
     // Stripe metadata in URL parameters requires the 'prefilled_metadata' prefix
     const checkoutUrl = `${stripeLink}?client_reference_id=${currentTaskId}`;
