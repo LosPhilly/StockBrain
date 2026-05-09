@@ -354,7 +354,7 @@ document.addEventListener('keydown', function(e) {
 });
 
 async function mockPayment() {
-    const stripeLink = "https://buy.stripe.com/3cIbJ23g89um9s49dBffy00"; 
+    const stripeLink = "https://buy.stripe.com/test_3cIbJ23g89um9s49dBffy00"; 
     
     // FORENSIC LOG: Verify the ID exists before redirecting
     //console.log("CRITICAL: Redirecting to Stripe for Task ID:", currentTaskId);
