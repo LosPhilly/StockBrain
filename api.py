@@ -26,8 +26,19 @@ ENV = os.getenv("ENV", "DEV")
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 # The database setup logic stays mostly the same
-DATABASE_URL = "sqlite:///./stockbrain.db"
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+# --- DATABASE PERSISTENCE LAYER ---
+# Prioritize Managed DB URL from Environment Variables
+DATABASE_URL = os.getenv("DATABASE_URL")
+if DATABASE_URL:
+    # Production: Managed PostgreSQL
+    # Fix for Heroku/DigitalOcean style strings if they start with 'postgres://'
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    engine = create_engine(DATABASE_URL)
+else:
+    # Development: Local SQLite
+    DATABASE_URL = "sqlite:///./stockbrain.db"
+    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
