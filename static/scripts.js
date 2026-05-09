@@ -176,7 +176,7 @@ async function startAnalysis() {
         lastLogIndex = 0;
 
         // 5. Polling Lifecycle
-        pollInterval = setInterval(() => pollSystemStatus(ticker), 2000);
+        pollInterval = setInterval(() => pollSystemStatus(currentTaskId), 2000);
 
     } catch (error) {
         console.error("Critical System Failure:", error);
@@ -204,19 +204,23 @@ function prepareDashboardUI(ticker) {
 /**
  * SYSTEM STATUS POLLING
  * Fetches logs and agent states from the FastAPI backend.
+ * Now hardened to handle state recovery from Task IDs.
  */
-async function pollSystemStatus(ticker) {
+async function pollSystemStatus(recoveredId = null) {
+    const targetId = recoveredId || currentTaskId;
+    if (!targetId) return;
+
     try {
-        const res = await fetch(`/api/status/${currentTaskId}`);
+        const res = await fetch(`/api/status/${targetId}`);
         const data = await res.json();
 
-        // Update Audit Trail
+        // 1. Update Audit Trail
         if (data.logs && data.logs.length > lastLogIndex) {
             data.logs.slice(lastLogIndex).forEach(log => appendLog(log.time, log.type, log.content));
             lastLogIndex = data.logs.length;
         }
 
-        // Update Agent Status Badges
+        // 2. Update Agent Status Badges
         if (data.agent_statuses) {
             Object.entries(data.agent_statuses).forEach(([id, status]) => {
                 const el = document.getElementById(id);
@@ -228,10 +232,19 @@ async function pollSystemStatus(ticker) {
             });
         }
 
-        // Handle Finalization
-        if (data.status === 'completed' || data.status === 'failed') {
+        // 3. MISSION-CRITICAL: Hydrate Reports and correct Ticker labels
+        if (data.status === 'completed') {
             clearInterval(pollInterval);
-            data.status === 'completed' ? renderFinalReport(data, ticker) : renderSystemError(data.error);
+            
+            // Set the ticker correctly (e.g., 'SCHD') instead of 'ANALYSIS'
+            const displayTicker = data.ticker || "ANALYSIS";
+            document.getElementById('dash-ticker-title').innerText = `Live Analysis: ${displayTicker}`;
+            
+            // Pass the real ticker to the renderer for the bottom status bar
+            renderFinalReport(data, displayTicker);
+        } else if (data.status === 'failed') {
+            clearInterval(pollInterval);
+            renderSystemError(data.error);
         }
     } catch (e) {
         console.warn("Telemetry Lost. Retrying...", e);
@@ -245,19 +258,22 @@ async function pollSystemStatus(ticker) {
 function renderFinalReport(statusData, ticker) {
     document.getElementById('report-date').innerText = new Date().toLocaleDateString();
     
-    // Render Portfolio Manager Decision
+    // 1. Render Portfolio Manager Decision
     const pmDecision = statusData.pm_decision;
-    document.getElementById('pm-content').innerHTML = marked.parse(pmDecision);
-    document.getElementById('pm-decision-wrapper').style.display = 'block';
+    if (pmDecision) {
+        document.getElementById('pm-content').innerHTML = marked.parse(pmDecision);
+        document.getElementById('pm-decision-wrapper').style.display = 'block';
+    }
 
-    // Render Supporting Dossier (Blurred)
+    // 2. Render Supporting Dossier
     const reportContent = document.getElementById('report-content');
-    reportContent.innerHTML = marked.parse(statusData.supporting_report);
-    reportContent.classList.add('blurred-content');
+    if (statusData.supporting_report) {
+        reportContent.innerHTML = marked.parse(statusData.supporting_report);
+    }
 
-    // Activate Export Command Bar
+    // 3. Update Global Status Bar (Fixes the 'undefined' ticker error)
     const dlBar = document.getElementById('dl-bar');
-    const isBullish = pmDecision.includes("BUY") || pmDecision.includes("Overweight");
+    const isBullish = pmDecision && (pmDecision.includes("BUY") || pmDecision.includes("Overweight"));
     const signalType = isBullish ? "BULLISH" : "CAUTION";
     
     dlBar.innerHTML = `
@@ -338,15 +354,18 @@ document.addEventListener('keydown', function(e) {
 });
 
 async function mockPayment() {
-    //alert("Payment Processed. Generating secure document...");
-    //window.location.href = '/api/download/' + currentTaskId;
-	// This is your live Stripe Payment Link URL
     const stripeLink = "https://buy.stripe.com/3cIbJ23g89um9s49dBffy00"; 
     
-    // Append the currentTaskId so your backend can verify it later
-    const checkoutUrl = `${stripeLink}?client_reference_id=${currentTaskId}`;
+    // FORENSIC LOG: Verify the ID exists before redirecting
+    //console.log("CRITICAL: Redirecting to Stripe for Task ID:", currentTaskId);
     
-    // Redirect the user to Stripe
+    if (!currentTaskId) {
+        alert("SYSTEM ERROR: Analysis context lost. Please restart the scan.");
+        return;
+    }
+
+    // Stripe metadata in URL parameters requires the 'prefilled_metadata' prefix
+    const checkoutUrl = `${stripeLink}?client_reference_id=${currentTaskId}`;
     window.location.href = checkoutUrl;
 }
 
@@ -411,61 +430,65 @@ function returnToLanding() {
     document.getElementById('landing-page').style.display = 'flex';
 }
 
+
 /**
- * HIGH-FIDELITY PDF EXPORT (SECURE VERIFICATION)
- * Performs a mandatory server-side handshake to confirm Stripe payment 
- * before granting clearance to unblur and print the dossier.
+ * HIGH-FIDELITY DASHBOARD RECOVERY & EXPORT
+ * Performs the forensic handshake to recover the Task ID, hydrates the UI
+ * with the full dossier, and manages the transition to a clean on-screen view.
  */
 async function generateExecutivePDF() {
     const urlParams = new URLSearchParams(window.location.search);
     const sessionId = urlParams.get('session_id');
 
-    // 1. Check for presence of session token in the return URL
-    if (!sessionId) {
-        alert("SECURITY ALERT: No valid payment session detected. Intelligence remains classified.");
-        return;
-    }
+    if (!sessionId) return;
 
     try {
-        // 2. Request verification and PDF generation from the secure endpoint
-        // This hits your FastAPI logic that checks session.payment_status == "paid"
-        const response = await fetch(`/api/download?task_id=${currentTaskId}&session_id=${sessionId}`);
-
+        const response = await fetch(`/api/download?session_id=${sessionId}`);
+        
         if (response.ok) {
-            // Success: Server confirmed Stripe payment and task_id match
-            alert("PAYMENT VERIFIED: Intelligence clearance granted. Preparing Institutional Briefing...");
-            executeInstitutionalPrint();
-        } else if (response.status === 402) {
-            alert("ACCESS DENIED: Payment required or transaction not yet confirmed by Stripe.");
-        } else if (response.status === 403) {
-            alert("SECURITY ALERT: Report ID mismatch. Unauthorized access attempt logged.");
-        } else {
-            const errorData = await response.json();
-            alert(`SYSTEM ERROR: ${errorData.detail || "Unable to verify clearance."}`);
-        }
+            const data = await response.json();
+            currentTaskId = data.task_id; // RECOVER IDENTITY
 
-    } catch (error) {
-        console.error("Verification Node Communication Failure:", error);
-        alert("SYSTEM ERROR: Clearance node offline. Please check your connection.");
+            // 1. RE-FETCH FULL DATA: Populates the blank Markdown containers
+            await pollSystemStatus(currentTaskId); 
+
+            // 2. UI VISIBILITY: Ensure the Dashboard is the active view
+            document.getElementById('landing-page').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'flex';
+            
+            // 3. SURGICAL HIDE: Hide technical panels ONLY
+            const progressPane = document.querySelector('.progress-pane');
+            const msgPane = document.querySelector('.msg-pane');
+            if (progressPane) progressPane.style.display = 'none';
+            if (msgPane) msgPane.style.display = 'none';
+
+            // 4. FORCE REPORT VISIBILITY: Explicitly show the result containers
+            document.getElementById('pm-decision-wrapper').style.display = 'block';
+            document.getElementById('report-wrapper').style.display = 'block';
+
+            // 5. THE UNBLUR: Remove visual lock from the Supporting Documentation
+            const reportContent = document.getElementById('report-content');
+            if (reportContent) {
+                reportContent.classList.remove('blurred-content');
+                reportContent.style.filter = "none"; // CSS Override
+                reportContent.style.opacity = "1";   // CSS Override
+            }
+
+            // 6. PRINT EXECUTION: 1.5s delay to ensure tables/Marked.js finish rendering
+            setTimeout(() => {
+                window.print();
+                
+                // 7. FORENSIC CLEANUP: Remove session_id to prevent re-print loops
+                window.history.replaceState({}, document.title, "/");
+                
+                console.log("State restored: Full intelligence briefing now legible on-screen.");
+            }, 1500);
+        }
+    } catch (e) {
+        console.error("Forensic node sync failure:", e);
     }
 }
 
-/**
- * INTERNAL PRINT ENGINE
- * Executes the visual transition for the verified user.
- */
-function executeInstitutionalPrint() {
-    const reportContent = document.getElementById('report-content');
-    
-    // Total visibility for verified personnel
-    reportContent.classList.remove('blurred-content');
-    
-    // Trigger native browser print-to-PDF engine
-    window.print();
-    
-    // Re-lock the screen after the print job is sent
-    reportContent.classList.add('blurred-content');
-}
 
 /**
  * INTERNAL PRINT ENGINE
@@ -554,7 +577,7 @@ function loadExampleReport() {
     dlBar.style.display = 'flex';
     dlBar.innerHTML = `
         <span class="download-text">⚠️ <strong>EXAMPLE REPORT:</strong> This is how the finalized $4.99 intelligence briefing appears.</span>
-	<button class="pay-btn" onclick="mockPayment()">Export Executive PDF — $4.99</button>
+	    <button class="pay-btn" onclick="mockPayment()">Export Executive PDF — $4.99</button>
         
     `;
 }
@@ -562,53 +585,29 @@ function loadExampleReport() {
 
 
 // ==========================================
-// V. EVENT LISTENERS
+// V. CONSOLIDATED MASTER BOOTSTRAP
 // ==========================================
-
 window.addEventListener('DOMContentLoaded', () => {
     initTheme();
-    simulateNetworkFlux();
     
-    // --- NEW: AUTO-VERIFY ON RETURN FROM STRIPE ---
+    // Auto-Verify Payment Return
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('session_id')) {
-        // If the user just paid and was redirected back, trigger the verification
-        console.log("Payment session detected. Initializing secure unblur...");
-        generateExecutivePDF(); 
+        console.log("Return verified session detected.");
+        generateExecutivePDF();
     }
-    // ----------------------------------------------
 
+    // Input Handlers
     const tInput = document.getElementById('ticker');
-    if(tInput) tInput.addEventListener('input', handleAutocomplete);
+    if (tInput) {
+        tInput.addEventListener('input', handleAutocomplete);
+        tInput.addEventListener('keypress', e => e.key === "Enter" && startAnalysis());
+    }
 
-    document.addEventListener('click', (e) => {
-        if (e.target.id !== 'ticker') hideAutocomplete();
-    });
-});
-
-window.addEventListener('DOMContentLoaded', () => {
-    initTheme();
+    // UI Effects & Global listeners
+    document.querySelectorAll('.blink-led').forEach(led => led.style.animation = 'hardware-pulse 1.2s infinite');
+    document.addEventListener('click', e => e.target.id !== 'ticker' && hideAutocomplete());
+    document.addEventListener('keydown', e => e.ctrlKey && ['c', 'a', 'x'].includes(e.key) && e.preventDefault());
+    
     simulateNetworkFlux();
-    
-    // Attach autocomplete to search bar
-    const tInput = document.getElementById('ticker');
-    if(tInput) tInput.addEventListener('input', handleAutocomplete);
-
-    // Close autocomplete when clicking away
-    document.addEventListener('click', (e) => {
-        if (e.target.id !== 'ticker') hideAutocomplete();
-    });
-});
-
-window.addEventListener('DOMContentLoaded', () => {
-    // Initialize the blink animation for tactical LEDs
-    const leds = document.querySelectorAll('.blink-led');
-    leds.forEach(led => {
-        led.style.animation = 'none';
-        led.offsetHeight; 
-        led.style.animation = null; 
-    });
-    
-    // Start the agent swarm flux simulation
-    simulateNetworkFlux(); 
 });

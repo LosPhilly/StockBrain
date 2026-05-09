@@ -1,5 +1,5 @@
 /* ============================================================
-   I. BASE THEMES & VARIABLES
+    I. BASE THEMES & VARIABLES
    ============================================================ */
 :root {
     --bg-main: #0A1128; 
@@ -39,7 +39,7 @@ body.light-mode {
 }
 
 /* ============================================================
-   II. GLOBAL & LAYOUT STYLES
+    II. GLOBAL & LAYOUT STYLES
    ============================================================ */
 body { 
     font-family: system-ui, -apple-system, sans-serif; 
@@ -49,30 +49,24 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 
-/* Fluid Asset Scaling */
-img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-}
+img { max-width: 100%; height: auto; display: block; }
 
-/* LOGO SCALING: Fixes the 'huge' issue in reports and landing */
 .logo-container img {
-    height: 100px; 
-    width: auto;
-    object-fit: contain;
-    margin-bottom: 10px;
+    height: 100px; width: auto; object-fit: contain; margin-bottom: 10px;
     filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.2));
 }
 
 .dashboard-header .sb-logo {
-    height: 45px; 
-    width: auto;
-    object-fit: contain;
-    margin: 0;
-    padding: 5px 0;
+    height: 45px; width: auto; object-fit: contain; margin: 0; padding: 5px 0;
     filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.1));
 }
+
+.header-left:hover .sb-logo {
+    filter: drop-shadow(0 0 8px var(--accent-blue));
+    transform: scale(1.02);
+}
+
+.header-right { display: flex; align-items: center; }
 
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-main); }
@@ -88,39 +82,27 @@ img {
 #theme-toggle:hover { filter: brightness(1.1); }
 
 /* ============================================================
-   III. SYSTEM STATUS BAR (TACTICAL OVERLAY)
+    III. SYSTEM STATUS BAR (TACTICAL OVERLAY)
    ============================================================ */
 .system-status-bar {
-    display: flex; gap: 25px;
-    font-family: 'Consolas', monospace;
-    font-size: 0.75rem;
-    letter-spacing: 2px;
-    padding: 10px 25px;
-    border-radius: 20px;
-    margin-bottom: 30px;
-    backdrop-filter: blur(4px);
-    overflow: visible;
+    display: flex; gap: 25px; font-family: 'Consolas', monospace;
+    font-size: 0.75rem; letter-spacing: 2px; padding: 10px 25px;
+    border-radius: 20px; margin-bottom: 30px; backdrop-filter: blur(4px);
     border: 1px solid rgba(56, 189, 248, 0.4);
-    background: rgba(10, 17, 40, 0.9);
-    color: var(--accent-blue);
+    background: rgba(10, 17, 40, 0.9); color: var(--accent-blue);
     box-shadow: 0 0 15px rgba(56, 189, 248, 0.1);
-    flex-wrap: wrap; 
-    justify-content: center;
+    flex-wrap: wrap; justify-content: center;
 }
 
 body.light-mode .system-status-bar {
-    background: #FFFFFF;
-    border: 1px solid var(--accent-blue);
-    color: var(--text-main);
-    box-shadow: 0 2px 15px rgba(2, 132, 199, 0.1);
+    background: #FFFFFF; border: 1px solid var(--accent-blue);
+    color: var(--text-main); box-shadow: 0 2px 15px rgba(2, 132, 199, 0.1);
 }
 
 .blink-led {
-    margin-right: 8px;
-    color: var(--accent-green);
+    margin-right: 8px; color: var(--accent-green);
     text-shadow: 0 0 10px var(--accent-green), 0 0 20px rgba(16, 185, 129, 0.5);
-    display: inline-block;
-    animation: hardware-pulse 1.2s infinite;
+    display: inline-block; animation: hardware-pulse 1.2s infinite;
 }
 
 #agent-count { color: var(--accent-blue); font-weight: bold; }
@@ -132,7 +114,7 @@ body.light-mode .system-status-bar {
 }
 
 /* ============================================================
-   IV. LANDING PAGE & SEARCH
+    IV. LANDING PAGE & SEARCH
    ============================================================ */
 #landing-page {
     display: flex; flex-direction: column; align-items: center;
@@ -164,8 +146,21 @@ input {
     cursor: pointer; margin-left: 10px; transition: 0.2s; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
 }
 
+.trending-container {
+    margin-top: 25px; display: flex; align-items: center; gap: 15px;
+    font-family: 'Consolas', monospace; font-size: 0.85rem;
+}
+
+.chip {
+    background: rgba(56, 189, 248, 0.05); border: 1px solid var(--border-color);
+    color: var(--accent-blue); padding: 5px 12px; border-radius: 15px;
+    cursor: pointer; transition: 0.3s;
+}
+
+.chip:hover { background: var(--accent-blue); color: #FFFFFF; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
+
 /* ============================================================
-   V. AGENT GRID & ARCHITECTURE
+    V. AGENT GRID & ARCHITECTURE
    ============================================================ */
 .section-container { width: 100%; max-width: 1200px; margin-bottom: 60px; text-align: center; }
 .agent-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
@@ -176,18 +171,14 @@ input {
 .agent-card:hover { transform: translateY(-5px); border-color: var(--accent-blue); }
 
 /* ============================================================
-   VI. DASHBOARD & CONSOLE (MISSION-CRITICAL)
+    VI. DASHBOARD & CONSOLE (MISSION-CRITICAL)
    ============================================================ */
 #dashboard {
     display: none; flex-direction: column; gap: 20px;
     width: 100%; max-width: 1400px; padding: 20px 20px 100px; box-sizing: border-box;
 }
 
-.top-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-    gap: 20px; width: 100%;
-}
+.top-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; width: 100%; }
 
 .panel { 
     background: #0D162D; border-radius: var(--border-radius); border: 1px solid var(--border-color); 
@@ -203,23 +194,29 @@ body.light-mode .panel { background: var(--bg-panel); }
     padding-bottom: 10px; margin-bottom: 15px;
 }
 
-.log-content {
-    color: #A5F3FC; text-shadow: 0 0 5px rgba(165, 243, 252, 0.2);
+.tactical-btn {
+    background: transparent; border: 1px solid var(--accent-blue); color: var(--accent-blue);
+    padding: 8px 15px; font-family: 'Consolas', monospace; font-size: 0.8rem;
+    letter-spacing: 1px; border-radius: var(--border-radius); cursor: pointer; transition: 0.3s;
 }
 
+.tactical-btn:hover { background: rgba(56, 189, 248, 0.1); box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
+
+.msg-pane { height: 450px; display: flex; flex-direction: column; }
+#log-scroll-container { flex: 1; overflow-y: auto; padding-right: 5px; }
+
+.log-row { font-family: 'Consolas', monospace; font-size: 0.8rem; border-bottom: 1px solid rgba(56, 189, 248, 0.1); }
+.log-time { width: 85px; color: var(--text-muted); padding: 4px 0; }
+.log-content { color: #A5F3FC; text-shadow: 0 0 5px rgba(165, 243, 252, 0.2); word-wrap: break-word; padding: 4px 0 4px 10px; }
 body.light-mode .log-content { color: var(--text-main); text-shadow: none; }
 
 /* ============================================================
-   VII. REPORTS & CONVERSION
+    VII. REPORTS & CONVERSION
    ============================================================ */
 #report-wrapper { position: relative; overflow: hidden; }
 
-/* BLURRED PREVIEW: Integrated for conversion reports */
 .blurred-content {
-    filter: blur(8px);
-    pointer-events: none;
-    user-select: none;
-    opacity: 0.6;
+    filter: blur(8px); pointer-events: none; user-select: none; opacity: 0.6;
     mask-image: linear-gradient(to bottom, black 0%, transparent 90%);
 }
 
@@ -242,7 +239,72 @@ body.light-mode .log-content { color: var(--text-main); text-shadow: none; }
 }
 
 /* ============================================================
-   VIII. RESPONSIVE UTILITIES
+    VIII. MODAL OVERLAYS (TERMS & CONDITIONS)
+   ============================================================ */
+#modal-overlay {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(4px); z-index: 1999;
+    transition: opacity 0.3s ease;
+}
+
+#terms-modal {
+    display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    z-index: 2000; width: 90%; max-width: 800px; max-height: 80vh; overflow-y: auto;
+    background: var(--bg-panel); color: var(--text-main); border: 2px solid var(--border-color);
+    border-radius: var(--border-radius); padding: 30px; box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+}
+
+body.light-mode #terms-modal { background: #FFFFFF; border: 2px solid var(--accent-blue); }
+
+#terms-modal h4 {
+    color: var(--accent-blue); margin-top: 20px; margin-bottom: 8px;
+    text-transform: uppercase; font-family: 'Consolas', monospace; font-size: 0.9rem;
+}
+
+#terms-modal::-webkit-scrollbar { width: 6px; }
+#terms-modal::-webkit-scrollbar-thumb { background: var(--accent-blue); }
+
+/* ============================================================
+    IX. FOOTER & DISCLOSURE
+   ============================================================ */
+.system-footer {
+    width: 100%; background: #050A18; border-top: 1px solid var(--border-color);
+    padding: 60px 20px 20px; margin-top: 80px; color: var(--text-muted); font-size: 0.85rem;
+}
+
+body.light-mode .system-footer { background: #F1F5F9; border-top: 1px solid #CBD5E1; }
+
+.footer-content { max-width: 1200px; margin: 0 auto; }
+.footer-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
+.sb-logo-footer { height: 35px; width: auto; object-fit: contain; margin-bottom: 10px; }
+.footer-links a { color: var(--accent-blue); text-decoration: none; margin-left: 20px; }
+
+.disclaimer-box {
+    border-left: 3px solid var(--border-color); padding-left: 20px; margin-bottom: 40px;
+    line-height: 1.6; font-family: 'Consolas', monospace; font-size: 0.75rem;
+}
+
+.footer-bottom {
+    text-align: center; border-top: 1px solid rgba(56, 189, 248, 0.1);
+    padding-top: 20px; letter-spacing: 1px;
+}
+
+.pricing-card {
+    background: var(--bg-panel); border: 1px solid var(--accent-gold);
+    padding: 40px; border-radius: var(--border-radius); max-width: 400px; margin: 20px auto;
+}
+
+.price { font-size: 2.5rem; color: var(--text-heading); margin: 20px 0; font-weight: bold; }
+.price span { font-size: 1rem; color: var(--text-muted); }
+
+.pricing-features { list-style: none; padding: 0; text-align: left; margin-bottom: 0; }
+.pricing-features li::before { content: "✓"; color: var(--accent-green); margin-right: 10px; }
+
+.protocol-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-top: 40px; }
+.step-num { font-family: 'Consolas', monospace; color: var(--accent-blue); font-size: 1.5rem; font-weight: bold; display: block; margin-bottom: 10px; }
+
+/* ============================================================
+    X. RESPONSIVE UTILITIES
    ============================================================ */
 @media (max-width: 1000px) {
     .agent-grid { grid-template-columns: 1fr 1fr; }
@@ -257,351 +319,94 @@ body.light-mode .log-content { color: var(--text-main); text-shadow: none; }
     .system-status-bar { gap: 10px; }
     .logo-container img { height: 80px; }
     .dashboard-header .sb-logo { height: 35px; }
-}
-
-@media (max-width: 600px) {
-    .agent-grid { grid-template-columns: 1fr; }
-}
-
-.header-right {
-    display: flex;
-    align-items: center;
-}
-
-.tactical-btn {
-    background: transparent;
-    border: 1px solid var(--accent-blue);
-    color: var(--accent-blue);
-    padding: 8px 15px;
-    font-family: 'Consolas', monospace;
-    font-size: 0.8rem;
-    letter-spacing: 1px;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.tactical-btn:hover {
-    background: rgba(56, 189, 248, 0.1);
-    box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
-}
-
-/* Ensure the header logo doesn't look like a static image */
-.header-left:hover .sb-logo {
-    filter: drop-shadow(0 0 8px var(--accent-blue));
-    transform: scale(1.02);
+    .protocol-grid { grid-template-columns: 1fr; }
 }
 
 /* ============================================================
-   IX. INSTITUTIONAL PDF EXPORT (PRINT)
+    XI. MISSION-CRITICAL PRINT ENGINE (O-STYLE THEMED)
    ============================================================ */
 @media print {
-    /* Hide non-essential UI */
-    #theme-toggle, .tactical-btn, .download-bar, .search-container {
-        display: none !important;
+    /* 1. Force Browser to Render High-Fidelity Colors */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
     }
 
-    body {
-        background: white !important;
-        color: #0A1128 !important;
-    }
-
-    #dashboard {
-        display: flex !important;
-        width: 100% !important;
-        max-width: none !important;
+    /* 2. Global Background & Typography Restoration */
+    html, body {
+        background-color: #0A1128 !important; /* Force Dark Blue */
+        color: #E2E8F0 !important;           /* Force White Text */
+        margin: 0 !important;
         padding: 0 !important;
     }
 
-    .panel {
-        break-inside: avoid;
-        border: 1px solid #1e3a8a !important;
-        background: #f8fafc !important;
-        margin-bottom: 20px;
+    /* 3. Panel & Markdown Specific Fixes */
+    .panel, .pm-card, #report-content, .markdown-body, p, li, span, h1, h2, h3, h4 {
+        color: #E2E8F0 !important;           /* Force all child text to White */
+        background-color: transparent !important;
     }
 
+    .panel {
+        background-color: #0D162D !important; /* Subtle Panel contrast */
+        border: 1px solid #1e3a8a !important;
+        break-inside: avoid;
+    }
+
+    /* 4. Portfolio Manager Decision Card (Force Blue/Gold) */
+    .pm-card {
+        background: linear-gradient(135deg, #1e3a8a 0%, #0A1128 100%) !important;
+        border-left: 10px solid #F59E0B !important; 
+        padding: 30px !important;
+    }
+
+    /* 5. Cleanup Web-Only Tactical UI */
+    #theme-toggle, .pay-btn, .tactical-btn, .system-status-bar, 
+    .download-bar, #landing-page, .progress-pane, .msg-pane, .trending-container {
+        display: none !important;
+    }
+
+    /* 6. Kill Filters & Masks for Intelligence Clearance */
     .blurred-content {
         filter: none !important;
         opacity: 1 !important;
         mask-image: none !important;
     }
 
-    .pm-card {
-        border-left: 10px solid #F59E0B !important;
-        background: #f1f5f9 !important;
-        page-break-before: always;
+    /* 7. Page Margin Controls */
+    @page {
+        margin: 1.5cm;
     }
 }
 
-/* ============================================================
-   X. FOOTER & DISCLOSURE STYLES
-   ============================================================ */
-.system-footer {
-    width: 100%;
-    background: #050A18;
-    border-top: 1px solid var(--border-color);
-    padding: 60px 20px 20px;
-    margin-top: 80px;
-    color: var(--text-muted);
-    font-size: 0.85rem;
-}
-
-body.light-mode .system-footer {
-    background: #F1F5F9;
-    border-top: 1px solid #CBD5E1;
-}
-
-.footer-content {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.footer-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 40px;
-}
-
-.sb-logo-footer { height: 35px; margin-bottom: 10px; }
-
-.footer-links a {
-    color: var(--accent-blue);
-    text-decoration: none;
-    margin-left: 20px;
-}
-
-.disclaimer-box {
-    border-left: 3px solid var(--border-color);
-    padding-left: 20px;
-    margin-bottom: 40px;
-    line-height: 1.6;
-    font-family: 'Consolas', monospace;
-    font-size: 0.75rem;
-}
-
-.footer-bottom {
-    text-align: center;
-    border-top: 1px solid rgba(56, 189, 248, 0.1);
-    padding-top: 20px;
-    letter-spacing: 1px;
-}
-
-/* Pricing & Protocol Grid */
-.pricing-card {
-    background: var(--bg-panel);
-    border: 1px solid var(--accent-gold);
-    padding: 40px;
-    border-radius: var(--border-radius);
-    max-width: 400px;
-    margin: 20px auto;
-}
-
-.price {
-    font-size: 2.5rem;
-    color: var(--text-heading);
-    margin: 20px 0;
-    font-weight: bold;
-}
-
-.price span { font-size: 1rem; color: var(--text-muted); }
-
-.pricing-features {
-    list-style: none;
-    padding: 0;
-    text-align: left;
-    margin-bottom: 0;
-}
-
-.pricing-features li::before {
-    content: "✓";
-    color: var(--accent-green);
-    margin-right: 10px;
-}
-
-.protocol-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
-    margin-top: 40px;
-}
-
-.step-num {
-    font-family: 'Consolas', monospace;
-    color: var(--accent-blue);
-    font-size: 1.5rem;
-    font-weight: bold;
-    display: block;
-    margin-bottom: 10px;
-}
-
-/* ============================================================
-   XI. LIVE AUDIT TRAIL CONSTRAINTS (FIX FOR SCROLLING)
-   ============================================================ */
-.msg-pane {
-    height: 450px; /* Constrains the panel to a fixed monitor height */
-    display: flex;
-    flex-direction: column;
-}
-
-#log-scroll-container {
-    flex: 1; /* Fills remaining space in the panel */
-    overflow-y: auto; /* Enables vertical scrolling */
-    padding-right: 5px;
-}
-
-.log-row {
-    font-family: 'Consolas', monospace;
-    font-size: 0.8rem;
-    border-bottom: 1px solid rgba(56, 189, 248, 0.1);
-}
-
-.log-time {
-    width: 85px;
-    color: var(--text-muted);
-    padding: 4px 0;
-}
-
-.log-content {
-    word-wrap: break-word;
-    padding: 4px 0 4px 10px;
-}
-
-/* ============================================================
-   XII. TACTICAL MODAL OVERLAY (TERMS & CONDITIONS)
-   ============================================================ */
-#terms-modal {
-    background: var(--bg-panel);
-    border: 1px solid var(--border-color);
-    padding: 30px;
-    border-radius: var(--border-radius);
-    color: var(--text-main);
-}
-
-body.light-mode #terms-modal {
-    background: #FFFFFF;
-}
-
-#terms-modal h4 {
-    color: var(--accent-blue);
-    margin-top: 20px;
-    margin-bottom: 8px;
-    text-transform: uppercase;
-    font-size: 0.9rem;
-}
-
-#modal-overlay {
-    backdrop-filter: blur(5px);
-    transition: opacity 0.3s ease;
-}
-
-/* ============================================================
-   XIII. PRINT ENHANCEMENTS (PDF FIDELITY)
-   ============================================================ */
 @media print {
-    /* Hide the footer and all landing sections during export */
-    .system-footer, #landing-extensions, #landing-page, #modal-overlay, #terms-modal {
+    /* 1. Global Reset: Hide everything except the dashboard [cite: 1, 4] */
+    body { background: white !important; color: black !important; }
+    #landing-page, #theme-toggle, .pay-btn, .download-bar, .system-status-bar, #terms-modal {
         display: none !important;
     }
-    
-    #dashboard {
+
+    /* 2. Hide the "Wonky" Technical Panels [cite: 7, 32] */
+    .progress-pane, .msg-pane, .top-grid {
+        display: none !important;
+    }
+
+    /* 3. Force Full Visibility of the Decision & Dossier [cite: 118, 121] */
+    #dashboard { display: block !important; width: 100% !important; }
+    #pm-decision-wrapper, #report-wrapper { 
+        display: block !important; 
+        width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
     }
-    
-    .panel {
-        box-shadow: none !important;
-        page-break-inside: avoid;
+
+    /* 4. Kill the Blur for Intelligence Clearance [cite: 34] */
+    .blurred-content {
+        filter: none !important;
+        opacity: 1 !important;
+        mask-image: none !important;
     }
-}
 
-/* ============================================================
-   XII. TACTICAL MODAL OVERLAY (TERMS & CONDITIONS)
-   ============================================================ */
-#modal-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8); /* Darker backdrop for focus */
-    backdrop-filter: blur(4px); /* Tactical frosted glass effect */
-    z-index: 1999;
-    transition: opacity 0.3s ease;
-}
-
-#terms-modal {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 2000;
-    width: 90%;
-    max-width: 800px;
-    max-height: 80vh;
-    overflow-y: auto;
-    background: var(--bg-panel); /* Matches industrial panel theme */
-    color: var(--text-main);
-    border: 2px solid var(--border-color); /* High-integrity border */
-    border-radius: var(--border-radius);
-    padding: 30px;
-    box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
-}
-
-body.light-mode #terms-modal {
-    background: #FFFFFF;
-    border: 2px solid var(--accent-blue);
-}
-
-#terms-modal h4 {
-    color: var(--accent-blue);
-    margin-top: 20px;
-    margin-bottom: 8px;
-    text-transform: uppercase;
-    font-family: 'Consolas', monospace;
-    font-size: 0.9rem;
-}
-
-/* Scrollbar polish for the modal content */
-#terms-modal::-webkit-scrollbar { width: 6px; }
-#terms-modal::-webkit-scrollbar-thumb { background: var(--accent-blue); }
-
-/* ============================================================
-   TRENDING CHIPS
-   ============================================================ */
-.trending-container {
-    margin-top: 25px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    font-family: 'Consolas', monospace;
-    font-size: 0.85rem;
-}
-
-.trending-label {
-    color: var(--text-muted);
-    letter-spacing: 1px;
-}
-
-.trending-chips {
-    display: flex;
-    gap: 10px;
-}
-
-.chip {
-    background: rgba(56, 189, 248, 0.05);
-    border: 1px solid var(--border-color);
-    color: var(--accent-blue);
-    padding: 5px 12px;
-    border-radius: 15px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.chip:hover {
-    background: var(--accent-blue);
-    color: #FFFFFF;
-    box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+    /* 5. Clean up URLs and Page Headers [cite: 4, 35] */
+    @page { margin: 1cm; }
 }
