@@ -34,7 +34,8 @@ if DATABASE_URL:
     # Fix for Heroku/DigitalOcean style strings if they start with 'postgres://'
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-    engine = create_engine(DATABASE_URL)
+    engine = create_engine(DATABASE_URL, 
+        connect_args={"sslmode": "require"})
 else:
     # Development: Local SQLite
     DATABASE_URL = "sqlite:///./stockbrain.db"
