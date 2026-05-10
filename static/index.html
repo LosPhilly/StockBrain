@@ -57,23 +57,21 @@
             <p>StockBrain replaces retail guesswork with a <strong>Multi-Agent Swarm</strong>. Watch in real-time as specialized AI researchers, adversarial debaters, and risk analysts stress-test the market to synthesize actionable strategies with institutional precision.</p>
         </div>
 
-        
         <div class="search-container">
-    <div class="trending-container">
-        <div class="trending-header">
-            <span class="pulse-dot"></span>
-            <span class="trending-label">LIVE SECTOR SCAN</span>
-        </div>
-        <div id="trending-list" class="trending-list">
+            <div class="trending-container">
+                <div class="trending-header">
+                    <span class="pulse-dot"></span>
+                    <span class="trending-label">LIVE SECTOR SCAN</span>
+                </div>
+                <div id="trending-list" class="trending-list"></div>
             </div>
-    </div>
 
-    <h3 class="search-title">Deploy Hedge Fund Analysis</h3>
-    <div class="input-group">
-        <input type="text" id="ticker" placeholder="Enter Ticker (e.g., AAPL)" onkeypress="handleEnter(event)" />
-        <button onclick="startAnalysis()">Analyze</button>
-    </div>
-    </div>
+            <h3 class="search-title">Deploy Hedge Fund Analysis</h3>
+            <div class="input-group">
+                <input type="text" id="ticker" placeholder="Enter Ticker (e.g., AAPL)" onkeypress="handleEnter(event)" />
+                <button onclick="startAnalysis()">Analyze</button>
+            </div>
+            
             <p class="example-link" onclick="loadExampleReport()" style="margin-top: 15px; cursor: pointer;">
                 Or view a <span style="color: var(--accent-gold); text-decoration: underline;">Sample Executive Briefing ($O)</span>
                 or the <a href="/assets/example_Stock_ReportTSLA.pdf" target="_blank" style="color: var(--accent-blue); text-decoration: underline;">Institutional Stock Report ($TSLA)</a>
@@ -113,47 +111,47 @@
             </div>
         </div>
 
-        <div id="landing-extensions" class="section-container">
-    <h2 class="section-title">Comparative Analysis: Architecture vs. Discovery</h2>
-    <div class="comparison-wrapper">
-        <table class="tactical-table">
-            <thead>
-                <tr>
-                    <th>Feature</th>
-                    <th>Standard AI Screener</th>
-                    <th class="highlight-col">Multi-Agent Swarm (StockBrain)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="row-label">Primary Goal</td>
-                    <td>Discovery: Filtering stocks via preset criteria.</td>
-                    <td class="highlight-cell">Depth: 360-degree investigation of a single ticker.</td>
-                </tr>
-                <tr>
-                    <td class="row-label">Architecture</td>
-                    <td>Single Model: One LLM processes the query.</td>
-                    <td class="highlight-cell">Specialized Teams: Collaborative AI departments.</td>
-                </tr>
-                <tr>
-                    <td class="row-label">Critical Thinking</td>
-                    <td>Pattern Recognition: Historical trend scoring.</td>
-                    <td class="highlight-cell">Adversarial Debate: Bull vs. Bear "Stress Tests".</td>
-                </tr>
-                <tr>
-                    <td class="row-label">Output Type</td>
-                    <td>List/Dashboard: Ranked table of results.</td>
-                    <td class="highlight-cell">Dossier: Multi-page briefing & tactical PDF.</td>
-                </tr>
-                <tr>
-                    <td class="row-label">Pricing Model</td>
-                    <td>Subscription: $20–$100/mo.</td>
-                    <td class="highlight-cell">Pay-Per-Report: $4.99 per Intelligence Export.</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
+        <div class="section-container">
+            <h2 class="section-title">Comparative Analysis: Architecture vs. Discovery</h2>
+            <div class="comparison-wrapper">
+                <table class="tactical-table">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Standard AI Screener</th>
+                            <th class="highlight-col">Multi-Agent Swarm (StockBrain)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="row-label">Primary Goal</td>
+                            <td>Discovery: Filtering stocks via preset criteria.</td>
+                            <td class="highlight-cell">Depth: 360-degree investigation of a single ticker.</td>
+                        </tr>
+                        <tr>
+                            <td class="row-label">Architecture</td>
+                            <td>Single Model: One LLM processes the query.</td>
+                            <td class="highlight-cell">Specialized Teams: Collaborative AI departments.</td>
+                        </tr>
+                        <tr>
+                            <td class="row-label">Critical Thinking</td>
+                            <td>Pattern Recognition: Historical trend scoring.</td>
+                            <td class="highlight-cell">Adversarial Debate: Bull vs. Bear "Stress Tests".</td>
+                        </tr>
+                        <tr>
+                            <td class="row-label">Output Type</td>
+                            <td>List/Dashboard: Ranked table of results.</td>
+                            <td class="highlight-cell">Dossier: Multi-page briefing & tactical PDF.</td>
+                        </tr>
+                        <tr>
+                            <td class="row-label">Pricing Model</td>
+                            <td>Subscription: $20–$100/mo.</td>
+                            <td class="highlight-cell">Pay-Per-Report: $4.99 per Intelligence Export.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
         <div class="section-container">
             <h2 class="section-title">See StockBrain In Action</h2>
@@ -170,10 +168,7 @@
             </div>
         </div>
 
-        
-
-        <div id="landing-extensions" class="section-container">
-            
+        <div class="section-container">
             <div class="pricing-section">
                 <h2 class="section-title">Institutional Pricing</h2>
                 <div class="pricing-card">
@@ -206,9 +201,7 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <div id="dashboard" style="display:none;">
+    </div> <div id="dashboard" style="display:none;">
         <div class="dashboard-header">
             <div class="header-left" onclick="returnToLanding()" style="cursor: pointer;">
                 <img src="/assets/logo/stockBrainWhite.png" alt="StockBrain Logo" class="sb-logo">

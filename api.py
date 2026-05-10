@@ -221,7 +221,7 @@ def run_trading_analysis(task_id: str, ticker: str):
         # Set dynamic time context (matching your specific environment date)
         init_state = ta.propagator.create_initial_state(ticker, "2026-05-08")
         args = ta.propagator.get_graph_args()
-        
+        args["recursion_limit"] = 150 # Add this to give the agents more "breathing room"
         analysis_tasks[task_id]["agent_statuses"]["st-market"] = "In Progress"
 
         # 4. LIVE GRAPH STREAMING

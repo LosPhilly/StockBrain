@@ -145,23 +145,33 @@ async function startAnalysis() {
     const ticker = tickerInput.value.toUpperCase().trim();
     
     // 1. Validation & Security Gate
-    const tickerRegex = /^[A-Z]{1,5}$/;
+    const tickerRegex = /^[A-Z1-9]{1,7}$/; // Slightly widened for crypto/global tickers
     if (!tickerRegex.test(ticker)) {
-        alert("SECURITY ALERT: Invalid Ticker Format. Use 1-5 alphabetic characters only.");
+        alert("SECURITY ALERT: Invalid Ticker Format.");
         tickerInput.value = "";
         return;
     }
     if (!ticker) return;
 
-    // 2. UI Transition: Combat Mode
+    // 2. UI Transition: Force Absolute Toggle
+    // We clear the landing page BEFORE the fetch to prevent the "sticky" feel
+    document.getElementById('landing-page').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'flex';
+    window.scrollTo(0, 0); // Reset scroll position for the dashboard
+    
     prepareDashboardUI(ticker);
     
-    // 3. Widget Initialization
+    // 3. Reset Polling & Logs
+    if (pollInterval) clearInterval(pollInterval);
+    lastLogIndex = 0;
+    document.getElementById('log-table-body').innerHTML = ''; // Clear old audit trail
+
+    // 4. Widget Initialization
     if (typeof injectGoogleTrends === 'function') {
         injectGoogleTrends(ticker);
     }
 
-    // 4. Analysis Initiation
+    // 5. Analysis Initiation
     try {
         const response = await fetch('/api/analyze', {
             method: 'POST',
@@ -173,14 +183,15 @@ async function startAnalysis() {
         
         const data = await response.json();
         currentTaskId = data.task_id;
-        lastLogIndex = 0;
 
-        // 5. Polling Lifecycle
+        // 6. Polling Lifecycle
         pollInterval = setInterval(() => pollSystemStatus(currentTaskId), 2000);
 
     } catch (error) {
         console.error("Critical System Failure:", error);
-        document.getElementById('report-content').innerHTML = `<h3 style="color:red">INITIALIZATION ERROR: ${error.message}</h3>`;
+        // If it fails, we show the error in the audit log so the user knows what happened
+        const logBody = document.getElementById('log-table-body');
+        logBody.innerHTML += `<tr><td class="log-time">ERR</td><td class="log-content" style="color:red">SYSTEM FAILURE: ${error.message}</td></tr>`;
     }
 }
 
@@ -549,37 +560,45 @@ function injectGoogleTrends(ticker) {
 // EXAMPLE REPORT LOAD
 // DEBUG - MOCK PAY BUTTON <button class="pay-btn" onclick="mockPayment()">Export Executive PDF — $4.99</button>
 function loadExampleReport() {
+    // 1. Force UI State
     document.getElementById('landing-page').style.display = 'none';
     document.getElementById('dashboard').style.display = 'flex';
-    document.getElementById('dash-ticker-title').innerText = "Live Analysis: O (Example)";
-    
+    document.getElementById('dash-ticker-title').innerText = "Institutional Intelligence: $O (Sample)";
+    window.scrollTo(0, 0);
+
+    // 2. Static Status Override
     const statuses = ['st-market', 'st-bull', 'st-rmanager', 'st-trader', 'st-risk1', 'st-pmanager'];
     statuses.forEach(id => {
         const el = document.getElementById(id);
-        el.className = 'status-badge status-Completed';
-        el.innerText = 'COMPLETED';
+        if (el) {
+            el.className = 'status-badge status-Completed';
+            el.innerText = 'COMPLETED';
+        }
     });
 
+    // 3. Populate Mock PM Decision
     const examplePM = `
-# Portfolio Manager Decision: O
-**Rating**: Overweight
-**Price Target**: 68.5
-**Thesis**: The investment case for O rests on a structural bullish trend where the 50-day SMA ($63.26) remains above the 200-day SMA ($58.83). The contraction of the ATR suggests a 'coiling spring' effect.
+# Portfolio Manager Decision: O (Realty Income)
+**Rating**: OVERWEIGHT (Institutional Buy)
+**Thesis**: Technical analysis indicates a structural bullish breakout. The "Adversarial Syndicate" noted risks regarding interest rate sensitivity, but the "Risk Team" confirmed the Kelly Criterion sizing remains optimal.
     `;
     
     document.getElementById('pm-content').innerHTML = marked.parse(examplePM);
     document.getElementById('pm-decision-wrapper').style.display = 'block';
     
+    // 4. Set "Blur" state for Supporting Docs
     const reportContent = document.getElementById('report-content');
-    reportContent.innerHTML = "### [DATA BLOCKED]\nDetailed agent research and adversarial debates are only available in the Executive Briefing.";
+    reportContent.innerHTML = "### [DATA BLOCKED]\nFull forensic logs and agent debates are locked. This is an example of a finalized intelligence dossier.";
     reportContent.classList.add('blurred-content');
+    document.getElementById('report-wrapper').style.display = 'block';
 
+    // 5. Force Download Bar
     const dlBar = document.getElementById('dl-bar');
     dlBar.style.display = 'flex';
+    dlBar.style.borderTop = '2px solid var(--accent-gold)';
     dlBar.innerHTML = `
-        <span class="download-text">⚠️ <strong>EXAMPLE REPORT:</strong> This is how the finalized $4.99 intelligence briefing appears.</span>
-	    
-        
+        <span class="download-text">⚠️ <strong>DEMO MODE:</strong> This represents a finalized briefing. Real reports include 30+ pages of agent reasoning.</span>
+        <button class="pay-btn" onclick="alert('This is a demo. Real analysis requires ticker deployment.')">Sample PDF Export</button>
     `;
 }
 
