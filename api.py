@@ -11,6 +11,8 @@ from dotenv import load_dotenv
 import os
 import stripe
 import textwrap
+import yfinance as yf  # <--- Add this to fix the Pylint error
+import random
 
 from sqlalchemy import Column, String, Text, create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
@@ -336,6 +338,59 @@ def run_trading_analysis(task_id: str, ticker: str):
 async def serve_search_page():
     # Serve the external HTML file
     return FileResponse("static/index.html")
+
+@app.get("/api/trending")
+async def get_trending_tickers():
+    # Rotate queries based on the current hour
+    hour = datetime.datetime.now().hour
+    
+    # Map hours to different "market desks"
+    queries = {
+        "morning": ["premarket", "nasdaq", "top gainers", "crypto", "equity","bitcoin", "ethereum", "futures"],
+        "afternoon": ["crypto", "equity","high volume", "blue chip", "sp500","bitcoin", "ethereum", "futures"],
+        "evening": ["crypto", "equity", "bitcoin", "ethereum", "futures"],
+        "night": ["crypto", "equity","asia market", "nikkei", "global","bitcoin", "ethereum", "futures"]
+    }
+    if 5 <= hour < 12:
+        current_pool = queries["morning"]
+    elif 12 <= hour < 17:
+        current_pool = queries["afternoon"]
+    elif 17 <= hour < 22:
+        current_pool = queries["evening"]
+    else:
+        current_pool = queries["night"]
+
+    query = random.choice(current_pool)
+
+    try:
+        import yfinance as yf
+        
+        # 1. Try an empty query - This often triggers the default "Most Active" list
+        search = yf.Search(query, max_results=10)
+        print(f"\n[SYSTEM DEBUG] Attempt 1 (Empty Query) - Quotes: {search.quotes}")
+        
+        quotes = getattr(search, 'quotes', [])
+        
+        # 2. If empty, try "equity" or "active"
+        if not quotes:
+            print("[SYSTEM DEBUG] Attempt 1 failed. Trying 'active'...")
+            search = yf.Search("top", max_results=10)
+            print(f"[SYSTEM DEBUG] Attempt 2 (Active) - Quotes: {search.quotes}")
+            quotes = getattr(search, 'quotes', [])
+
+        if quotes:
+            # Clean up and return
+            symbols = [q['symbol'].split('=')[0] for q in quotes if 'symbol' in q][:6]
+            print(f"[SYSTEM DEBUG] Success! Parsed: {symbols}")
+            return symbols
+
+        # 3. Final Fallback if Yahoo is being completely silent
+        print("[SYSTEM DEBUG] All Yahoo queries returned empty. Using StockBrain Default Node list.")
+        return ["NVDA", "TSLA", "AAPL", "BTC-USD", "AMD", "MSFT"]
+        
+    except Exception as e:
+        print(f"[SYSTEM DEBUG] Critical Sync Error: {e}")
+        return ["NVDA", "TSLA", "AAPL", "BTC-USD"]
 	
 @app.get("/terms")
 async def serve_terms():

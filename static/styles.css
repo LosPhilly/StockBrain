@@ -114,11 +114,15 @@ body.light-mode .system-status-bar {
 }
 
 /* ============================================================
-    IV. LANDING PAGE & SEARCH
+    IV. LANDING PAGE & SEARCH (GLASSMORPHISM RESTORED)
    ============================================================ */
 #landing-page {
-    display: flex; flex-direction: column; align-items: center;
-    width: 100%; padding: 60px 20px; box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding: 60px 20px;
+    box-sizing: border-box;
 }
 
 .hero-text { text-align: center; max-width: 800px; margin-bottom: 40px; }
@@ -126,38 +130,127 @@ body.light-mode .system-status-bar {
 .hero-text p { color: var(--text-muted); font-size: 1.15rem; line-height: 1.6;}
 
 .search-container { 
-    text-align: center; background: var(--bg-panel); padding: 40px;
-    border-radius: var(--border-radius); border: 1px solid var(--border-color);
-    box-shadow: var(--shadow); width: 100%; max-width: 700px; margin-bottom: 60px;
+    text-align: center; 
+    background: rgba(17, 34, 64, 0.5); /* Glass effect */
+    backdrop-filter: blur(12px);
+    padding: 50px 40px;
+    border-radius: 12px; 
+    border: 1px solid var(--border-color);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3); 
+    width: 100%; 
+    max-width: 650px; 
+    margin: 0 auto 60px auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.example-link { margin-top: 15px; font-size: 0.9rem; color: var(--text-muted); cursor: pointer; }
-.highlight { color: var(--accent-gold); text-decoration: underline; }
+body.light-mode .search-container {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid var(--border-color);
+}
 
-input { 
-    padding: 16px 20px; font-size: 1.2rem; width: 60%; max-width: 350px;
-    background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius);
-    color: var(--text-main); outline: none; text-transform: uppercase;
+.input-group {
+    display: flex;
+    width: 100%;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+input#ticker { 
+    flex: 2;
+    padding: 16px 20px; 
+    font-size: 1.1rem;
+    background: rgba(10, 17, 40, 0.7);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    color: #fff;
+    font-family: 'Consolas', monospace;
+    outline: none;
+    transition: 0.3s;
+}
+
+body.light-mode input#ticker {
+    background: #FFFFFF;
+    color: var(--text-main);
+}
+
+input#ticker:focus {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
 }
 
 .search-container button { 
-    padding: 17px 35px; font-size: 1.1rem; background: var(--accent-gold); 
-    color: #FFFFFF; border: none; border-radius: var(--border-radius); font-weight: bold;
-    cursor: pointer; margin-left: 10px; transition: 0.2s; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
+    padding: 17px 35px; 
+    font-size: 1.1rem; 
+    background: var(--accent-gold); 
+    color: #FFFFFF; 
+    border: none; 
+    border-radius: var(--border-radius); 
+    font-weight: bold;
+    cursor: pointer; 
+    transition: 0.2s; 
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
 }
 
+.search-container button:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+/* Ticker Pills Styling */
 .trending-container {
-    margin-top: 25px; display: flex; align-items: center; gap: 15px;
-    font-family: 'Consolas', monospace; font-size: 0.85rem;
+    width: 100%;
+    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
 }
 
-.chip {
-    background: rgba(56, 189, 248, 0.05); border: 1px solid var(--border-color);
-    color: var(--accent-blue); padding: 5px 12px; border-radius: 15px;
-    cursor: pointer; transition: 0.3s;
+.trending-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.chip:hover { background: var(--accent-blue); color: #FFFFFF; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
+.trending-label {
+    font-family: 'Consolas', monospace;
+    font-size: 0.7rem;
+    color: var(--accent-gold);
+    letter-spacing: 2px;
+    font-weight: bold;
+}
+
+.trending-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.ticker-pill {
+    background: rgba(56, 189, 248, 0.08);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    color: var(--accent-blue);
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-family: 'Consolas', monospace;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+}
+
+.ticker-pill:hover {
+    background: var(--accent-blue);
+    color: #0A1128;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(56, 189, 248, 0.3);
+}
 
 /* ============================================================
     V. AGENT GRID & ARCHITECTURE
@@ -169,6 +262,15 @@ input {
     border-radius: var(--border-radius); text-align: left; transition: transform 0.3s ease; box-shadow: var(--shadow);
 }
 .agent-card:hover { transform: translateY(-5px); border-color: var(--accent-blue); }
+
+.architecture-card {
+    background: var(--grad-arch-card);
+    border: 1px solid var(--border-color);
+    padding: 40px;
+    border-radius: var(--border-radius);
+    margin-top: 40px;
+    text-align: left;
+}
 
 /* ============================================================
     VI. DASHBOARD & CONSOLE (MISSION-CRITICAL)
@@ -265,61 +367,191 @@ body.light-mode #terms-modal { background: #FFFFFF; border: 2px solid var(--acce
 #terms-modal::-webkit-scrollbar-thumb { background: var(--accent-blue); }
 
 /* ============================================================
-    IX. FOOTER & DISCLOSURE
+    IX. FOOTER & PRICING (INTEGRATED AESTHETICS)
    ============================================================ */
 .system-footer {
-    width: 100%; background: #050A18; border-top: 1px solid var(--border-color);
-    padding: 60px 20px 20px; margin-top: 80px; color: var(--text-muted); font-size: 0.85rem;
+    width: 100%; 
+    background: #050A18; 
+    border-top: 1px solid var(--border-color);
+    padding: 60px 20px 20px; 
+    margin-top: 80px; 
+    color: var(--text-muted); 
+    font-size: 0.85rem;
+    box-sizing: border-box;
 }
 
-body.light-mode .system-footer { background: #F1F5F9; border-top: 1px solid #CBD5E1; }
+body.light-mode .system-footer { 
+    background: #F1F5F9; 
+    border-top: 1px solid #CBD5E1; 
+}
 
-.footer-content { max-width: 1200px; margin: 0 auto; }
-.footer-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
-.sb-logo-footer { height: 35px; width: auto; object-fit: contain; margin-bottom: 10px; }
-.footer-links a { color: var(--accent-blue); text-decoration: none; margin-left: 20px; }
+.footer-content { 
+    max-width: 1200px; 
+    margin: 0 auto; 
+}
 
+.footer-top { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start; 
+    margin-bottom: 40px; 
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+/* Footer Brand & Logo */
+.footer-brand { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: flex-start; 
+}
+
+.sb-logo-footer { 
+    height: 35px; 
+    width: auto; 
+    object-fit: contain; 
+    margin-bottom: 10px; 
+    filter: grayscale(1) brightness(1.5);
+    opacity: 0.6;
+    transition: all 0.3s ease;
+}
+
+.sb-logo-footer:hover { 
+    opacity: 1; 
+    filter: none; 
+}
+
+.footer-links a { 
+    color: var(--accent-blue); 
+    text-decoration: none; 
+    margin-left: 20px; 
+    font-weight: 500;
+}
+
+/* Disclaimer / Consolas Box */
 .disclaimer-box {
-    border-left: 3px solid var(--border-color); padding-left: 20px; margin-bottom: 40px;
-    line-height: 1.6; font-family: 'Consolas', monospace; font-size: 0.75rem;
+    border-left: 3px solid var(--border-color); 
+    padding-left: 20px; 
+    margin-bottom: 40px;
+    line-height: 1.6; 
+    font-family: 'Consolas', monospace; 
+    font-size: 0.75rem;
+    text-align: left;
 }
 
 .footer-bottom {
-    text-align: center; border-top: 1px solid rgba(56, 189, 248, 0.1);
-    padding-top: 20px; letter-spacing: 1px;
+    text-align: center; 
+    border-top: 1px solid rgba(56, 189, 248, 0.1);
+    padding-top: 20px; 
+    letter-spacing: 1px;
+    font-family: 'Consolas', monospace;
+    font-size: 0.7rem;
 }
 
+/* Pricing Card - Glassmorphism Aesthetic */
 .pricing-card {
-    background: var(--bg-panel); border: 1px solid var(--accent-gold);
-    padding: 40px; border-radius: var(--border-radius); max-width: 400px; margin: 20px auto;
+    background: rgba(17, 34, 64, 0.4);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--accent-gold);
+    padding: 40px;
+    border-radius: var(--border-radius);
+    max-width: 400px;
+    margin: 40px auto;
+    box-shadow: 0 0 30px rgba(245, 158, 11, 0.05);
+    transition: transform 0.3s ease;
 }
 
-.price { font-size: 2.5rem; color: var(--text-heading); margin: 20px 0; font-weight: bold; }
+.pricing-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 40px rgba(245, 158, 11, 0.1);
+}
+
+.price { 
+    font-size: 2.5rem; 
+    color: var(--text-heading); 
+    margin: 20px 0; 
+    font-weight: bold; 
+}
+
 .price span { font-size: 1rem; color: var(--text-muted); }
 
-.pricing-features { list-style: none; padding: 0; text-align: left; margin-bottom: 0; }
-.pricing-features li::before { content: "✓"; color: var(--accent-green); margin-right: 10px; }
+.pricing-features { 
+    list-style: none; 
+    padding: 0; 
+    text-align: left; 
+    margin-top: 25px; 
+}
 
-.protocol-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-top: 40px; }
-.step-num { font-family: 'Consolas', monospace; color: var(--accent-blue); font-size: 1.5rem; font-weight: bold; display: block; margin-bottom: 10px; }
+.pricing-features li {
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pricing-features li::before { 
+    content: "✓"; 
+    color: var(--accent-green); 
+    font-weight: bold; 
+}
+
+/* Operational Protocol - Tactical Steps */
+.protocol-grid { 
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 40px; 
+    margin-top: 50px; 
+}
+
+.step-num { 
+    font-family: 'Consolas', monospace; 
+    color: var(--accent-blue); 
+    font-size: 2rem; 
+    font-weight: 900; 
+    display: block; 
+    margin-bottom: 15px; 
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+    opacity: 0.8;
+}
+
+.step p { font-size: 0.95rem; line-height: 1.5; color: var(--text-muted); }
+.step p strong { color: var(--text-heading); display: block; margin-bottom: 5px; }
+
+/* Responsive Utility */
+@media (max-width: 768px) {
+    .footer-top {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .footer-brand { align-items: center; }
+    .footer-links { margin-top: 20px; }
+    .footer-links a { margin: 0 10px; }
+    .protocol-grid { grid-template-columns: 1fr; gap: 30px; }
+}
 
 /* ============================================================
     X. RESPONSIVE UTILITIES
    ============================================================ */
-@media (max-width: 1000px) {
-    .agent-grid { grid-template-columns: 1fr 1fr; }
-    .top-grid { grid-template-columns: 1fr; }
-}
-
 @media (max-width: 768px) {
     .hero-text h2 { font-size: 1.8rem; }
-    .search-container input { width: 100%; margin-bottom: 10px; }
+    .search-container { padding: 30px 20px; }
+    .input-group { flex-direction: column; width: 100%; }
+    .search-container input { max-width: 100%; width: 100%; box-sizing: border-box; }
     .search-container button { width: 100%; margin-left: 0; }
     .agent-grid { grid-template-columns: 1fr; }
-    .system-status-bar { gap: 10px; }
-    .logo-container img { height: 80px; }
-    .dashboard-header .sb-logo { height: 35px; }
     .protocol-grid { grid-template-columns: 1fr; }
+    .sb-logo-footer { max-width: 120px; }
+    .tactical-table th, .tactical-table td {
+        padding: 15px 10px;
+        font-size: 0.8rem;
+    }
+    
+    .row-label {
+        width: 30%;
+    }
 }
 
 /* ============================================================
@@ -410,3 +642,82 @@ body.light-mode .system-footer { background: #F1F5F9; border-top: 1px solid #CBD
     /* 5. Clean up URLs and Page Headers [cite: 4, 35] */
     @page { margin: 1cm; }
 }
+
+/* ============================================================
+    XII. TACTICAL COMPARISON TABLE (SWARM VS SCREENER)
+   ============================================================ */
+.comparison-wrapper {
+    overflow-x: auto; /* Required for mobile swiping */
+    margin: 40px auto;
+    background: rgba(17, 34, 64, 0.3);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    backdrop-filter: blur(12px);
+    box-shadow: var(--shadow);
+    max-width: 1000px;
+}
+
+.tactical-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.9rem;
+    color: var(--text-main);
+}
+
+.tactical-table thead th {
+    background: rgba(10, 17, 40, 0.6);
+    padding: 20px;
+    font-family: 'Consolas', monospace;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--accent-blue);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.tactical-table td {
+    padding: 20px;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+    line-height: 1.5;
+}
+
+.row-label {
+    font-family: 'Consolas', monospace;
+    font-weight: bold;
+    color: var(--accent-blue);
+    background: rgba(10, 17, 40, 0.2);
+    width: 25%;
+}
+
+/* StockBrain Column Highlighting - Tactical Gold */
+.highlight-col {
+    color: var(--accent-gold) !important;
+    text-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+}
+
+.highlight-cell {
+    color: var(--text-heading);
+    background: rgba(245, 158, 11, 0.03); /* Subtle gold tint */
+    border-left: 2px solid var(--accent-gold);
+}
+
+/* Light Mode Overrides */
+body.light-mode .comparison-wrapper {
+    background: #FFFFFF;
+    border: 1px solid var(--border-color);
+}
+
+body.light-mode .tactical-table thead th {
+    background: #F1F5F9;
+    color: var(--accent-blue);
+}
+
+body.light-mode .highlight-cell {
+    background: rgba(180, 83, 9, 0.05);
+}
+
+/* Hover effect to guide the eye */
+.tactical-table tbody tr:hover {
+    background: rgba(56, 189, 248, 0.03);
+}
+

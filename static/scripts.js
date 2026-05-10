@@ -583,6 +583,34 @@ function loadExampleReport() {
     `;
 }
 
+async function loadTrending() {
+    const list = document.getElementById('trending-list');
+    if (!list) return;
+
+    try {
+        const response = await fetch('/api/trending');
+        const tickers = await response.json();
+        
+        list.innerHTML = ''; // Wipe the "nothing" away
+        
+        tickers.forEach(symbol => {
+            const pill = document.createElement('div');
+            pill.className = 'ticker-pill'; // <--- THIS IS CRITICAL FOR THE CSS TO WORK
+            pill.innerText = `$${symbol}`;
+            pill.onclick = () => {
+                const input = document.getElementById('ticker');
+                if (input) input.value = symbol;
+            };
+            list.appendChild(pill);
+        });
+    } catch (err) {
+        console.error("Trending UI Sync Failed:", err);
+    }
+}
+
+// Run on startup
+document.addEventListener('DOMContentLoaded', loadTrending);
+
 
 
 // ==========================================
