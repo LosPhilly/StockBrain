@@ -395,30 +395,46 @@ from fastapi.responses import FileResponse
 # ==========================================
 @app.get("/api/download")
 async def verify_clearance(session_id: str = Query(...)):
-    if not session_id or session_id == "{CHECKOUT_SESSION_ID}":
+    # 1. Validate Session ID format
+    if not session_id or session_id in ["{CHECKOUT_SESSION_ID}", "null", "undefined"]:
+        print("DOWNLOAD ERROR: Invalid or placeholder session_id received.")
         raise HTTPException(status_code=400, detail="Invalid Session ID")
     
     try:
-        # Retrieve the session from Stripe
-        session = stripe.checkout.Session.retrieve(session_id)
-        
+        # 2. Retrieve the session from Stripe
+        try:
+            session = stripe.checkout.Session.retrieve(session_id)
+        except stripe.error.StripeError as e:
+            print(f"STRIPE API ERROR: {e}")
+            raise HTTPException(status_code=400, detail="Could not verify payment session with Stripe.")
+
+        # 3. Check Payment Status
         if session.payment_status != "paid":
+            print(f"PAYMENT NOT PAID: Status is {session.payment_status}")
             raise HTTPException(status_code=402, detail="Payment incomplete")
         
-        # Pull the ID from the field confirmed in your JSON
+        # 4. Recover Task ID
         actual_task_id = session.client_reference_id
-        
         if not actual_task_id:
+            print(f"CRITICAL: client_reference_id is missing for session {session_id}")
             raise HTTPException(status_code=400, detail="Task ID missing from Stripe Session")
 
-        # Query the Managed DB
-        db = SessionLocal()
-        record = db.query(TaskRecord).filter(TaskRecord.task_id == actual_task_id).first()
-        db.close()
+        print(f"VERIFYING CLEARANCE: Task {actual_task_id} for Session {session_id}")
 
-        if record:
-            # If the analysis is finished and has a report
-            if record.supporting_report and len(record.supporting_report) > 10:
+        # 5. Database Lookup with fresh connection
+        db = SessionLocal()
+        try:
+            record = db.query(TaskRecord).filter(TaskRecord.task_id == actual_task_id).first()
+            
+            if not record:
+                print(f"DATABASE MISS: Task {actual_task_id} not found in DB.")
+                raise HTTPException(status_code=404, detail="Analysis record not found in database.")
+
+            # 6. Check Report Readiness
+            has_report = record.supporting_report and len(record.supporting_report) > 50
+            
+            if has_report:
+                print(f"CLEARANCE GRANTED: {record.ticker} report is ready.")
                 return {
                     "status": "success",
                     "task_id": actual_task_id,
@@ -426,15 +442,20 @@ async def verify_clearance(session_id: str = Query(...)):
                     "message": "Clearance granted."
                 }
             else:
-                # Analysis is still running in the background task
+                # This covers the 'ROLLBACK' or 'STILL ANALYZING' case
+                print(f"PROCESSING: Task {actual_task_id} exists but report is empty.")
                 return {
                     "status": "processing",
                     "task_id": actual_task_id,
                     "message": "Payment verified. Swarm is still finalizing the report..."
                 }
+        finally:
+            db.close()
 
-        raise HTTPException(status_code=404, detail="Analysis record not found in database.")
-            
+    except HTTPException:
+        # Re-raise FastAPIs internal exceptions (402, 404, etc)
+        raise
     except Exception as e:
-        print(f"STRIPE VERIFICATION CRITICAL ERROR: {e}")
+        # Catch-all for unexpected logic/network errors
+        print(f"DOWNLOAD CRITICAL FAILURE: {type(e).__name__}: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Verification failed: {str(e)}")
