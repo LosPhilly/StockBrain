@@ -354,7 +354,7 @@ document.addEventListener('keydown', function(e) {
 });
 
 async function mockPayment() {
-    const stripeLink = "https://buy.stripe.com/test_3cIbJ23g89um9s49dBffy00"; 
+    const stripeLink = "https://buy.stripe.com/3cIbJ23g89um9s49dBffy00"; 
     
     // FORENSIC LOG: Verify the ID exists before redirecting
     //console.log("CRITICAL: Redirecting to Stripe for Task ID:", currentTaskId);
@@ -546,7 +546,8 @@ function injectGoogleTrends(ticker) {
     document.head.appendChild(script);
 }
 
-
+// EXAMPLE REPORT LOAD
+// DEBUG - MOCK PAY BUTTON <button class="pay-btn" onclick="mockPayment()">Export Executive PDF — $4.99</button>
 function loadExampleReport() {
     document.getElementById('landing-page').style.display = 'none';
     document.getElementById('dashboard').style.display = 'flex';
@@ -577,7 +578,7 @@ function loadExampleReport() {
     dlBar.style.display = 'flex';
     dlBar.innerHTML = `
         <span class="download-text">⚠️ <strong>EXAMPLE REPORT:</strong> This is how the finalized $4.99 intelligence briefing appears.</span>
-	    <button class="pay-btn" onclick="mockPayment()">Export Executive PDF — $4.99</button>
+	    
         
     `;
 }
