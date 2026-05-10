@@ -177,68 +177,72 @@ def run_trading_analysis(task_id: str, ticker: str):
     """
     MISSION-CRITICAL ANALYTICAL SWARM
     Orchestrates the multi-agent graph, manages live state telemetry,
-    and ensures forensic-grade persistence in SQLite.
+    and ensures forensic-grade persistence in Managed PostgreSQL.
     """
     try:
-        # 1. Swarm Initialization
-        # 1. IMMEDIATE MEMORY HYDRATION: Store the ticker right away
+        # 1. IMMEDIATE MEMORY HYDRATION
+        # Ensure the task entry exists in local memory for the polling route
+        if task_id not in analysis_tasks:
+            analysis_tasks[task_id] = {}
+        
         analysis_tasks[task_id]["ticker"] = ticker
-        config = DEFAULT_CONFIG.copy()
-        config["llm_provider"] = "google" 
-        config["output_language"] = "English" 
-        
-        ta = TradingAgentsGraph(["market", "social", "news", "fundamentals"], debug=True, config=config)
-        
-        # Initialize Memory State
+        analysis_tasks[task_id]["status"] = "processing"
         analysis_tasks[task_id]["logs"] = []
         analysis_tasks[task_id]["agent_statuses"] = {
             "st-market": "Pending", "st-bull": "Pending", "st-bear": "Pending",
             "st-rmanager": "Pending", "st-trader": "Pending", "st-risk1": "Pending",
             "st-risk2": "Pending", "st-risk3": "Pending", "st-pmanager": "Pending"
         }
-        analysis_tasks[task_id]["pm_decision"] = "" 
+        analysis_tasks[task_id]["pm_decision"] = ""
 
         def add_log(msg_type, content):
             t = datetime.datetime.now().strftime("%H:%M:%S")
-            text = str(content) 
             analysis_tasks[task_id]["logs"].append({
                 "time": t, 
                 "type": msg_type, 
-                "content": text
+                "content": str(content)
             })
 
-        add_log("System", f"Initialized LangGraph framework for {ticker}")
+        # 2. TICKER VALIDATION (Prevention of yfinance Empty Ticker Failure)
+        if not ticker or ticker.strip() == "":
+            raise ValueError("System rejected analysis: Empty ticker symbol provided.")
+
+        add_log("System", f"Deploying AI Syndicate for {ticker}...")
+
+        # 3. SWARM INITIALIZATION
+        config = DEFAULT_CONFIG.copy()
+        config["llm_provider"] = "google" 
+        config["output_language"] = "English" 
         
-        # Set dynamic time context for forensic auditability
+        ta = TradingAgentsGraph(["market", "social", "news", "fundamentals"], debug=True, config=config)
+        
+        # Set dynamic time context (matching your specific environment date)
         init_state = ta.propagator.create_initial_state(ticker, "2026-05-08")
         args = ta.propagator.get_graph_args()
         
         analysis_tasks[task_id]["agent_statuses"]["st-market"] = "In Progress"
 
-        # 2. Live Graph Streaming
+        # 4. LIVE GRAPH STREAMING
         trace = []
         for chunk in ta.graph.stream(init_state, **args):
-            # Process internal messages for the Audit Trail
+            # Log agent activity
             for message in chunk.get("messages", []):
                 msg_class = type(message).__name__
                 content = getattr(message, 'content', '')
-                if msg_class == "HumanMessage":
-                    add_log("Control" if content == "Continue" else "User", content)
-                elif msg_class == "ToolMessage":
-                    add_log("Data", "Tool returned requested market data.")
-                elif msg_class == "AIMessage" and content:
-                    add_log("Agent", content)
+                if content:
+                    if msg_class == "HumanMessage":
+                        add_log("Control" if content == "Continue" else "User", content)
+                    elif msg_class == "AIMessage":
+                        add_log("Agent", content)
 
-            # Map Graph state to UI Status Badges
+            # UI STATUS MAPPING
             status_map = analysis_tasks[task_id]["agent_statuses"]
             
-            # Phase: Market Research
             if chunk.get("market_report") or chunk.get("fundamentals_report"):
                 status_map["st-market"] = "Completed"
                 status_map["st-bull"] = "In Progress"
                 status_map["st-bear"] = "In Progress"
             
-            # Phase: Investment Debate
             if chunk.get("investment_debate_state"):
                 debate = chunk["investment_debate_state"]
                 if debate.get("judge_decision"):
@@ -249,67 +253,80 @@ def run_trading_analysis(task_id: str, ticker: str):
                 else:
                     status_map["st-rmanager"] = "In Progress"
 
-            # Phase: Tactical Execution Plan
             if chunk.get("trader_investment_plan"):
                 status_map["st-trader"] = "Completed"
-                status_map["st-risk1"] = "In Progress"
-                status_map["st-risk2"] = "In Progress"
-                status_map["st-risk3"] = "In Progress"
+                status_map.update({"st-risk1": "In Progress", "st-risk2": "In Progress", "st-risk3": "In Progress"})
 
-            # Phase: Risk Management & PM Finalization
             if chunk.get("risk_debate_state"):
                 risk = chunk["risk_debate_state"]
                 if risk.get("judge_decision"):
-                    status_map["st-risk1"] = "Completed"
-                    status_map["st-risk2"] = "Completed"
-                    status_map["st-risk3"] = "Completed"
-                    status_map["st-pmanager"] = "Completed"
+                    status_map.update({"st-risk1": "Completed", "st-risk2": "Completed", "st-risk3": "Completed", "st-pmanager": "Completed"})
                     analysis_tasks[task_id]["pm_decision"] = risk["judge_decision"]
                 else:
                     status_map["st-pmanager"] = "In Progress"
 
             trace.append(chunk)
 
-        # 3. Finalization & Forensic Persistence
+        # 5. FINAL REPORT ASSEMBLY
         if not trace:
-            raise ValueError("Graph execution returned empty trace.")
+            raise ValueError("Intelligence swarm failed to return actionable data.")
 
         final_state = trace[-1]
+        supporting = build_supporting_markdown_report(final_state)
+        full_report = build_complete_downloadable_report(final_state, ticker)
         
-        # Hydrate Memory for immediate UI response
-        analysis_tasks[task_id]["supporting_report"] = build_supporting_markdown_report(final_state)
-        analysis_tasks[task_id]["full_download_report"] = build_complete_downloadable_report(final_state, ticker)
+        # Hydrate Memory for immediate UI clearance
+        analysis_tasks[task_id].update({
+            "status": "completed",
+            "supporting_report": supporting,
+            "full_download_report": full_report
+        })
         
-        # Global Status Lock
+        # Ensure all statuses are locked to Completed
         for k in analysis_tasks[task_id]["agent_statuses"]:
             analysis_tasks[task_id]["agent_statuses"][k] = "Completed"
-        
-        analysis_tasks[task_id]["status"] = "completed"
-        add_log("System", "Intelligence Briefing Finalized. Awaiting Clearance.")
 
-        # Atomic Commit to SQLite (WAL Mode handles the lock)
+        add_log("System", "Intelligence Briefing Finalized. Clearance protocol initiated.")
+
+        # 6. ATOMIC PERSISTENCE (Fixes the Rollback issue)
+        # We open a FRESH connection here so it doesn't time out during the analysis
         db = SessionLocal()
         try:
-            new_task = TaskRecord(
-                task_id=task_id,
-                ticker=ticker,
-                pm_decision=analysis_tasks[task_id].get("pm_decision", "Decision Pending"),
-                supporting_report=analysis_tasks[task_id]["supporting_report"],
-                full_download_report=analysis_tasks[task_id]["full_download_report"]
-            )
-            db.merge(new_task) 
-            db.commit()
+            # Check if record exists (it should have been created by start_analysis)
+            record = db.query(TaskRecord).filter(TaskRecord.task_id == task_id).first()
+            
+            if record:
+                record.pm_decision = analysis_tasks[task_id].get("pm_decision", "Hold / Neutral")
+                record.supporting_report = supporting
+                record.full_download_report = full_report
+                db.commit()
+                print(f"SUCCESS: Task {task_id} committed to Managed DB.")
+            else:
+                # Fallback: create it if it doesn't exist
+                new_task = TaskRecord(
+                    task_id=task_id,
+                    ticker=ticker,
+                    pm_decision=analysis_tasks[task_id].get("pm_decision", "Hold / Neutral"),
+                    supporting_report=supporting,
+                    full_download_report=full_report
+                )
+                db.add(new_task)
+                db.commit()
+                print(f"SUCCESS: Task {task_id} created and committed to Managed DB.")
         except Exception as db_err:
-            print(f"DATABASE PERSISTENCE FAILURE: {db_err}")
             db.rollback()
+            print(f"DATABASE PERSISTENCE FAILURE: {db_err}")
+            # We don't crash the whole function here because the data is still in memory
         finally:
             db.close()
 
     except Exception as e:
-        print(f"SYSTEM CRITICAL FAILURE: {e}")
+        error_msg = f"SYSTEM CRITICAL FAILURE: {str(e)}"
+        print(error_msg)
         if task_id in analysis_tasks:
             analysis_tasks[task_id]["status"] = "failed"
             analysis_tasks[task_id]["error"] = str(e)
+            add_log("Error", error_msg)
 
 
 # --- API ROUTES ---
