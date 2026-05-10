@@ -327,51 +327,62 @@ async def serve_terms():
 @app.post("/api/analyze")
 async def start_analysis(req: AnalyzeRequest, background_tasks: BackgroundTasks):
     task_id = str(uuid.uuid4())
-    analysis_tasks[task_id] = {"status": "processing", "logs": [], "agent_statuses": {}}
+    
+    # 1. Immediate Database Entry (The "Source of Truth")
+    db = SessionLocal()
+    try:
+        new_task = TaskRecord(
+            task_id=task_id,
+            ticker=req.ticker.upper(),
+            pm_decision="Analysis in progress...",
+            supporting_report="",
+            full_download_report=""
+        )
+        db.add(new_task)
+        db.commit()
+    except Exception as e:
+        print(f"FAILED TO INITIALIZE TASK IN DB: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Database initialization failed")
+    finally:
+        db.close()
+
+    # 2. Memory initialization for the current worker
+    analysis_tasks[task_id] = {"status": "processing", "logs": [], "agent_statuses": {}, "ticker": req.ticker}
+    
     background_tasks.add_task(run_trading_analysis, task_id, req.ticker)
     return {"task_id": task_id}
 
 @app.get("/api/status/{task_id}")
 async def get_status(task_id: str):
-    # 1. Check Active Memory (RAM)
-    if task_id in analysis_tasks:
-        task_data = analysis_tasks[task_id]
-        resp = {
-            "status": task_data["status"],
-            "logs": task_data.get("logs", []),
-            "agent_statuses": task_data.get("agent_statuses", {})
-        }
-        if task_data["status"] == "completed":
-            resp["pm_decision"] = task_data.get("pm_decision", "")
-            resp["supporting_report"] = task_data.get("supporting_report", "")
-            # FIX: Return the actual ticker from memory if available
-            resp["ticker"] = task_data.get("ticker", "ANALYSIS")
-        return resp
-
-    # 2. FALLBACK: Pull from SQLite Forensic Database 
+    # 1. Check DB First
     db = SessionLocal()
-    # Check by Task ID
     record = db.query(TaskRecord).filter(TaskRecord.task_id == task_id).first()
-    
-    # Check by Ticker as secondary fallback (Fixes the /SCHD 404 error)
-    if not record:
-        record = db.query(TaskRecord).filter(TaskRecord.ticker == task_id).order_by(TaskRecord.task_id.desc()).first()
     db.close()
 
+    # 2. Check Local Memory for live logs/telemetry
+    local_data = analysis_tasks.get(task_id)
+
     if record:
-        return {
-            "status": "completed",
-            "ticker": record.ticker, # POPULATES UI WITH 'SCHD', 'AAPL', etc.
-            "pm_decision": record.pm_decision,
-            "supporting_report": record.supporting_report,
-            "agent_statuses": {
-                "st-market": "Completed", "st-bull": "Completed", 
-                "st-rmanager": "Completed", "st-trader": "Completed", 
-                "st-risk1": "Completed", "st-pmanager": "Completed"
+        # If the DB has a report, it's finished
+        if record.supporting_report:
+            return {
+                "status": "completed",
+                "ticker": record.ticker,
+                "pm_decision": record.pm_decision,
+                "supporting_report": record.supporting_report,
+                "agent_statuses": {"st-pmanager": "Completed"}
             }
+        
+        # If DB exists but no report, it's still processing
+        return {
+            "status": "processing",
+            "ticker": record.ticker,
+            "logs": local_data.get("logs", []) if local_data else [],
+            "agent_statuses": local_data.get("agent_statuses", {}) if local_data else {"system": "Initializing"}
         }
 
-    raise HTTPException(status_code=404, detail="Analysis record not found.")
+    raise HTTPException(status_code=404, detail="Task ID not found in global registry.")
 
 import tempfile
 import os
@@ -383,40 +394,47 @@ from fastapi.responses import FileResponse
 # IV. THE "CLEARANCE & RESTORE" ENDPOINT
 # ==========================================
 @app.get("/api/download")
-async def verify_clearance(session_id: str = Query(...), task_id: str = None):
-    """
-    Acts as the Forensic Recovery Node.
-    Ensures that when Stripe redirects back, the frontend can recover 
-    the full analysis even if the browser state was wiped.
-    """
-    if not session_id:
-        raise HTTPException(status_code=402, detail="Payment session required")
+async def verify_clearance(session_id: str = Query(...)):
+    if not session_id or session_id == "{CHECKOUT_SESSION_ID}":
+        raise HTTPException(status_code=400, detail="Invalid Session ID")
     
     try:
+        # Retrieve the session from Stripe
         session = stripe.checkout.Session.retrieve(session_id)
         
         if session.payment_status != "paid":
-            raise HTTPException(status_code=402, detail="Payment not confirmed")
+            raise HTTPException(status_code=402, detail="Payment incomplete")
         
-        # Identity Recovery logic
-        actual_task_id = session.client_reference_id or session.metadata.get("task_id") or task_id
+        # Pull the ID from the field confirmed in your JSON
+        actual_task_id = session.client_reference_id
         
-        if not actual_task_id or actual_task_id == "{client_reference_id}":
-            raise HTTPException(status_code=400, detail="Intelligence ID missing")
+        if not actual_task_id:
+            raise HTTPException(status_code=400, detail="Task ID missing from Stripe Session")
 
-        # Database Check
+        # Query the Managed DB
         db = SessionLocal()
         record = db.query(TaskRecord).filter(TaskRecord.task_id == actual_task_id).first()
         db.close()
 
-        if record or (actual_task_id in analysis_tasks and analysis_tasks[actual_task_id]["status"] == "completed"):
-            return {
-                "status": "success",
-                "task_id": actual_task_id,
-                "message": "Clearance granted. State recovered."
-            }
-        else:
-            raise HTTPException(status_code=404, detail="Analysis record not found in persistence.")
+        if record:
+            # If the analysis is finished and has a report
+            if record.supporting_report and len(record.supporting_report) > 10:
+                return {
+                    "status": "success",
+                    "task_id": actual_task_id,
+                    "ticker": record.ticker,
+                    "message": "Clearance granted."
+                }
+            else:
+                # Analysis is still running in the background task
+                return {
+                    "status": "processing",
+                    "task_id": actual_task_id,
+                    "message": "Payment verified. Swarm is still finalizing the report..."
+                }
+
+        raise HTTPException(status_code=404, detail="Analysis record not found in database.")
             
     except Exception as e:
+        print(f"STRIPE VERIFICATION CRITICAL ERROR: {e}")
         raise HTTPException(status_code=400, detail=f"Verification failed: {str(e)}")
