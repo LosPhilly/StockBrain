@@ -70,6 +70,8 @@ class TaskRecord(Base):
     full_download_report = Column(Text)
 
 # This is where the "create_all" logic actually lives
+# TEMPORARY: Run once to sync the Managed DB schema
+Base.metadata.drop_all(bind=engine)
 Base.metadata.create_all(bind=engine)
 
 if ENV == "PROD":
