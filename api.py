@@ -45,10 +45,26 @@ else:
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
+# --- UPDATED MODELS ---
+class User(Base):
+    """
+    STORES INSTITUTIONAL ACCESS STATUS:
+    Linked to Firebase/RevenueCat app_user_id.
+    """
+    __tablename__ = "users"
+    user_id = Column(String, primary_key=True, index=True)
+    is_subscribed = Column(String, default="inactive") # "active" or "inactive"
+    last_sync = Column(String)
+
 class TaskRecord(Base):
+    """
+    CENTRAL TASK REGISTRY:
+    Maintains links for both Web (session_id) and App (user_id) flows.
+    """
     __tablename__ = "tasks"
     task_id = Column(String, primary_key=True, index=True)
     ticker = Column(String)
+    user_id = Column(String, index=True, nullable=True) # NEW: Links to App User History
     pm_decision = Column(Text)
     supporting_report = Column(Text)
     full_download_report = Column(Text)
@@ -84,6 +100,7 @@ analysis_tasks = {}
 
 class AnalyzeRequest(BaseModel):
     ticker: str
+    user_id: str = None # NEW: Passed by Flutter app
 
 def build_supporting_markdown_report(final_state):
     sections = []
@@ -221,7 +238,7 @@ def run_trading_analysis(task_id: str, ticker: str):
         # Set dynamic time context (matching your specific environment date)
         init_state = ta.propagator.create_initial_state(ticker, "2026-05-08")
         args = ta.propagator.get_graph_args()
-        args["recursion_limit"] = 150 # Add this to give the agents more "breathing room"
+        args["recursion_limit"] = 250 # Add this to give the agents more "breathing room"
         analysis_tasks[task_id]["agent_statuses"]["st-market"] = "In Progress"
 
         # 4. LIVE GRAPH STREAMING
@@ -396,16 +413,53 @@ async def get_trending_tickers():
 async def serve_terms():
     return FileResponse("static/terms.html")
 
+
+@app.post("/api/webhooks/revenuecat")
+async def revenuecat_webhook(payload: dict):
+    """
+    SYNC PROTOCOL:
+    Unifies App Store/Play Store entitlements with the local PostgreSQL database.
+    """
+    event = payload.get("event", {})
+    app_user_id = event.get("app_user_id")
+
+    if not app_user_id:
+        return {"status": "ignored"}
+
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter(User.user_id == app_user_id).first()
+        if not user:
+            user = User(user_id=app_user_id)
+            db.add(user)
+
+        # Update status based on RevenueCat event type
+        if event.get("type") in ["INITIAL_PURCHASE", "RENEWAL"]:
+            user.is_subscribed = "active"
+        elif event.get("type") in ["EXPIRATION", "CANCELLATION"]:
+            user.is_subscribed = "inactive"
+
+        user.last_sync = datetime.datetime.now().isoformat()
+        db.commit()
+    finally:
+        db.close()
+    return {"status": "synced"}
+
+
 @app.post("/api/analyze")
 async def start_analysis(req: AnalyzeRequest, background_tasks: BackgroundTasks):
+    """
+    DEPLOYMENT GATEWAY:
+    Assigns a task_id and persists the initial record with optional ownership.
+    """
     task_id = str(uuid.uuid4())
     
-    # 1. Immediate Database Entry (The "Source of Truth")
     db = SessionLocal()
     try:
         new_task = TaskRecord(
             task_id=task_id,
             ticker=req.ticker.upper(),
+            user_id=req.user_id, # LINKING: Associates task with the mobile account
             pm_decision="Analysis in progress...",
             supporting_report="",
             full_download_report=""
@@ -413,48 +467,64 @@ async def start_analysis(req: AnalyzeRequest, background_tasks: BackgroundTasks)
         db.add(new_task)
         db.commit()
     except Exception as e:
-        print(f"FAILED TO INITIALIZE TASK IN DB: {e}")
         db.rollback()
+        print(f"CRITICAL DB FAILURE: {e}")
         raise HTTPException(status_code=500, detail="Database initialization failed")
     finally:
         db.close()
 
-    # 2. Memory initialization for the current worker
-    analysis_tasks[task_id] = {"status": "processing", "logs": [], "agent_statuses": {}, "ticker": req.ticker}
+    # Hydrate memory registry for live polling
+    analysis_tasks[task_id] = {
+        "status": "processing", 
+        "logs": [], 
+        "agent_statuses": {}, 
+        "ticker": req.ticker
+    }
     
+    # Trigger autonomous swarm in background
     background_tasks.add_task(run_trading_analysis, task_id, req.ticker)
     return {"task_id": task_id}
 
 @app.get("/api/status/{task_id}")
-async def get_status(task_id: str):
-    # 1. Check DB First
+async def get_status(task_id: str, user_id: str = None):
+    """
+    INTELLIGENCE ACCESS HANDLER:
+    Checks for authorized clearance via mobile subscription status.
+    Web clearance remains handled separately via the /api/download handshake.
+    """
     db = SessionLocal()
     record = db.query(TaskRecord).filter(TaskRecord.task_id == task_id).first()
+    
+    # AUTHORIZATION CHECK (Institutional App Flow)
+    is_authorized = False
+    if user_id:
+        user = db.query(User).filter(User.user_id == user_id).first()
+        if user and user.is_subscribed == "active":
+            is_authorized = True
+    
     db.close()
-
-    # 2. Check Local Memory for live logs/telemetry
     local_data = analysis_tasks.get(task_id)
 
     if record:
-        # If the DB has a report, it's finished
+        # DATA DELIVERY: Only provide full report if analysis is done
         if record.supporting_report:
             return {
                 "status": "completed",
                 "ticker": record.ticker,
                 "pm_decision": record.pm_decision,
                 "supporting_report": record.supporting_report,
-                "agent_statuses": {"st-pmanager": "Completed"}
+                "authorized": is_authorized # Flutter uses this for UI unblurring
             }
         
-        # If DB exists but no report, it's still processing
+        # TELEMETRY: Return live logs for the terminal UI
         return {
             "status": "processing",
             "ticker": record.ticker,
             "logs": local_data.get("logs", []) if local_data else [],
-            "agent_statuses": local_data.get("agent_statuses", {}) if local_data else {"system": "Initializing"}
+            "agent_statuses": local_data.get("agent_statuses", {}) if local_data else {"system": "Syncing"}
         }
 
-    raise HTTPException(status_code=404, detail="Task ID not found in global registry.")
+    raise HTTPException(status_code=404, detail="Task context lost.")
 
 import tempfile
 import os
@@ -531,3 +601,27 @@ async def verify_clearance(session_id: str = Query(...)):
         # Catch-all for unexpected logic/network errors
         print(f"DOWNLOAD CRITICAL FAILURE: {type(e).__name__}: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Verification failed: {str(e)}")
+
+# ==========================================
+# FLUTTER APP USER HISTORY
+# ==========================================
+
+@app.get("/api/history/{user_id}")
+async def get_history(user_id: str):
+    """
+    FORENSIC RETRIEVAL:
+    Returns the history of all intelligence reports associated with an App account.
+    """
+    db = SessionLocal()
+    try:
+        tasks = db.query(TaskRecord).filter(TaskRecord.user_id == user_id).all()
+        return [
+            {
+                "task_id": t.task_id, 
+                "ticker": t.ticker, 
+                "date": datetime.datetime.now().strftime('%Y-%m-%d')
+            } 
+            for t in tasks
+        ]
+    finally:
+        db.close()
